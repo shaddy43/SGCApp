@@ -4,11 +4,7 @@ import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -19,9 +15,8 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.squareup.picasso.Picasso;
 
-public class MainActivity extends AppCompatActivity {
+public class SignUp extends AppCompatActivity {
 
     EditText eName;
     EditText eEmail;
@@ -40,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_sign_up);
 
         defaultPicUrl = "https://firebasestorage.googleapis.com/v0/b/sgcapp-8dcbb.appspot.com/o/profile_images%2Fred_john.jpg?alt=media&token=93d427e1-8943-4b5c-bf86-09579a52f5ba";
         eName = findViewById(R.id.editText_name);
@@ -48,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
         ePassword =findViewById(R.id.editText_password);
         pBar = findViewById(R.id.progressBar);
 
-        sp=new SharedPreferencesConfig(getApplicationContext());
+        sp = new SharedPreferencesConfig(getApplicationContext());
         mAuth = FirebaseAuth.getInstance();
 
 
@@ -94,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
                                     else
                                     {
                                         pBar.setVisibility(View.GONE);
-                                        Toast.makeText(MainActivity.this, "Data not Inserted", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(SignUp.this, "Data not Inserted", Toast.LENGTH_SHORT).show();
                                     }
 
                                 }
@@ -103,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
                 else
                 {
                     pBar.setVisibility(View.GONE);
-                    Toast.makeText(MainActivity.this, "Not Authenticated", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SignUp.this, "Not Authenticated", Toast.LENGTH_SHORT).show();
                 }
             }
         });

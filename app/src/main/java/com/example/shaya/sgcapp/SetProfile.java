@@ -2,6 +2,7 @@ package com.example.shaya.sgcapp;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -106,17 +107,20 @@ public class SetProfile extends AppCompatActivity {
 
     public void changeImage(View view)
     {
-        Intent intent = new Intent();
+        /*Intent intent = new Intent();
         intent.setAction(Intent.ACTION_GET_CONTENT);
-        intent.setType("image/*");
-        startActivityForResult(intent,1);
+        intent.setType("Profile_Pic/*");
+        startActivityForResult(intent,1);*/
+
+        Intent gallery = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI);
+        startActivityForResult(gallery, 100);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if(requestCode == 1 && resultCode == RESULT_OK && data != null)
+        if(requestCode == 100 && resultCode == RESULT_OK && data != null)
         {
             final Uri imageUri = data.getData();
             final StorageReference filePath = userDataStorage.child(mAuth.getCurrentUser().getUid() + ".jpg");

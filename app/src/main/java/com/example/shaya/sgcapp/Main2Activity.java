@@ -1,6 +1,9 @@
 package com.example.shaya.sgcapp;
 
+import android.content.ContentResolver;
 import android.content.Intent;
+import android.database.Cursor;
+import android.provider.ContactsContract;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -10,6 +13,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
 import android.widget.Toolbar;
+
+import java.util.ArrayList;
 
 public class Main2Activity extends AppCompatActivity {
 
@@ -52,9 +57,9 @@ public class Main2Activity extends AppCompatActivity {
         {
             Toast.makeText(this, "settings", Toast.LENGTH_SHORT).show();
         }
-        if(id==R.id.menu_chat)
+        if(id==R.id.menu_find_freinds)
         {
-            Toast.makeText(this, "chat", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this,AddContact.class));
         }
 
         return super.onOptionsItemSelected(item);

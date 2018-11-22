@@ -21,8 +21,8 @@ class TabsPagerAdapter extends FragmentPagerAdapter {
                 ChatFragment chatFragment=new ChatFragment();
                 return chatFragment;
             case 2:
-                FriendsFragment friendsFragment=new FriendsFragment();
-                return friendsFragment;
+                ContactsFragment contactsFragment =new ContactsFragment();
+                return contactsFragment;
             default:
                 return null;
         }
@@ -42,7 +42,7 @@ class TabsPagerAdapter extends FragmentPagerAdapter {
             case 1:
                 return "Chats";
             case 2:
-                return "Friends";
+                return "Contacts";
             default:
                 return null;
         }
