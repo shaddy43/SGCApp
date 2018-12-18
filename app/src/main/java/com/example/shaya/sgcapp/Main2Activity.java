@@ -1,20 +1,34 @@
 package com.example.shaya.sgcapp;
 
 import android.content.ContentResolver;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.provider.ContactsContract;
+import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.EditText;
 import android.widget.Toast;
 import android.widget.Toolbar;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
 
 public class Main2Activity extends AppCompatActivity {
 
@@ -22,17 +36,50 @@ public class Main2Activity extends AppCompatActivity {
     ViewPager vPager;
 
     TabsPagerAdapter tabsPagerAdapter;
+    DatabaseReference ref;
+
+    FirebaseAuth mAuth;
+    String currentUserId;
+
+    SharedPreferencesConfig sp;
+    String defaultGroupPicUrl = "https://firebasestorage.googleapis.com/v0/b/sgcapp-8dcbb.appspot.com/o/group_messages_images%2FGroup-icon.png?alt=media&token=ad95fa3e-f5bd-4605-947f-8784e468f60e";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main2);
 
+        ref = FirebaseDatabase.getInstance().getReference();
         tLayout = findViewById(R.id.main_tabs);
         vPager = findViewById(R.id.main_tabs_pager);
 
         tabsPagerAdapter=new TabsPagerAdapter(getSupportFragmentManager());
         vPager.setAdapter(tabsPagerAdapter);
         tLayout.setupWithViewPager(vPager);
+
+        sp = new SharedPreferencesConfig(this);
+
+        mAuth = FirebaseAuth.getInstance();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        updateUserState("online");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        updateUserState("offline");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        updateUserState("offline");
     }
 
     @Override
@@ -55,13 +102,136 @@ public class Main2Activity extends AppCompatActivity {
         }
         if(id==R.id.menu_settings)
         {
-            Toast.makeText(this, "settings", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this,Settings.class));
         }
         if(id==R.id.menu_find_freinds)
         {
             startActivity(new Intent(this,AddContact.class));
         }
+        if(id==R.id.menu_create_group)
+        {
+            requestNewGroup();
+        }
+        if(id==R.id.menu_logOut)
+        {
+            updateUserState("offline");
+
+            sp.writeLoginStatus(false);
+            mAuth.signOut();
+            Intent i = getBaseContext().getPackageManager()
+                    .getLaunchIntentForPackage( getBaseContext().getPackageName() );
+            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(i);
+        }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void requestNewGroup() {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.AlertDialog);
+        builder.setTitle("Enter Group Name");
+
+        final EditText group = new EditText(this);
+        group.setHint("eg : School Friends");
+        builder.setView(group);
+
+        builder.setPositiveButton("Create", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+                String groupName = group.getText().toString();
+
+                if(TextUtils.isEmpty(groupName))
+                {
+                    Toast.makeText(Main2Activity.this, "Please Enter A Group Name ....", Toast.LENGTH_SHORT).show();
+                }
+                else
+                {
+                    createNewGroup(groupName);
+                }
+
+            }
+        });
+
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        
+        builder.show();
+    }
+
+    private void createNewGroup(final String groupName) {
+
+        final String user = mAuth.getCurrentUser().getUid();
+
+        DatabaseReference groupIdKeyRef = ref.child("groups").push();
+        final String groupKey = groupIdKeyRef.getKey();
+
+        ref.child("groups").child(groupKey).child("Name").setValue(groupName).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if(task.isSuccessful())
+                {
+                    //Toast.makeText(Main2Activity.this, groupKey+" is created Successfully", Toast.LENGTH_SHORT).show();
+                    ref.child("group-users").child(groupKey).child(user).child("groupStatus").setValue("admin")
+                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+
+                                    ref.child("users").child(user).child("user-groups").child(groupKey).setValue("true");
+                                    ref.child("groups").child(groupKey).child("Total_Members").setValue(1);
+                                    ref.child("groups").child(groupKey).child("Group_Pic").setValue(defaultGroupPicUrl).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+
+                                            if(task.isSuccessful())
+                                            {
+                                                Intent intent = new Intent(Main2Activity.this,GroupMemberSelection.class);
+                                                intent.putExtra("groupKey",groupKey);
+                                                startActivity(intent);
+                                            }
+                                            else
+                                            {
+                                                Toast.makeText(Main2Activity.this, "Group Not Created. Check internet", Toast.LENGTH_SHORT).show();
+                                            }
+                                        }
+                                    });
+
+                                }
+                            });
+                }
+                else
+                {
+                    Toast.makeText(Main2Activity.this, "Group not created. Check Internet", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+    }
+
+    public void updateUserState(String state)
+    {
+        String saveCurrentTime, saveCurrentDate;
+
+        Calendar calender = Calendar.getInstance();
+        SimpleDateFormat currentDate = new SimpleDateFormat("MMM dd yyyy");
+        saveCurrentDate = currentDate.format(calender.getTime());
+
+        SimpleDateFormat currentTime = new SimpleDateFormat("hh:mm a");
+        saveCurrentTime = currentTime.format(calender.getTime());
+
+        HashMap<String, Object> onlineStateMap = new HashMap<>();
+        onlineStateMap.put("time", saveCurrentTime);
+        onlineStateMap.put("date", saveCurrentDate);
+        onlineStateMap.put("state", state);
+
+        currentUserId = mAuth.getCurrentUser().getUid();
+
+        ref.child("users").child(currentUserId).child("user-state")
+                .updateChildren(onlineStateMap);
     }
 }

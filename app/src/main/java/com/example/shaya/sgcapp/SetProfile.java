@@ -1,5 +1,6 @@
 package com.example.shaya.sgcapp;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.provider.MediaStore;
@@ -33,7 +34,7 @@ public class SetProfile extends AppCompatActivity {
 
     EditText name;
     EditText status;
-    TextView email;
+    TextView phoneNum;
     CircleImageView imageView;
     Button editProfile;
     Button submit;
@@ -41,6 +42,8 @@ public class SetProfile extends AppCompatActivity {
     FirebaseAuth mAuth;
     DatabaseReference userData;
     StorageReference userDataStorage;
+
+    ProgressDialog loadingBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,7 +57,7 @@ public class SetProfile extends AppCompatActivity {
 
         name = findViewById(R.id.name_setProfile);
         status = findViewById(R.id.status_setProfile);
-        email = findViewById(R.id.email_setProfile);
+        phoneNum = findViewById(R.id.email_setProfile);
         imageView = findViewById(R.id.profile_image);
         editProfile = findViewById(R.id.editProfile_setProfile);
         submit = findViewById(R.id.submit_setProfile);
@@ -64,12 +67,14 @@ public class SetProfile extends AppCompatActivity {
         imageView.setEnabled(false);
         submit.setVisibility(View.GONE);
 
+        loadingBar = new ProgressDialog(this);
+
         userData.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 name.setText(dataSnapshot.child("Name").getValue().toString());
                 status.setText(dataSnapshot.child("Status").getValue().toString());
-                email.setText(dataSnapshot.child("Email_Address").getValue().toString());
+                phoneNum.setText(dataSnapshot.child("Phone_Number").getValue().toString());
                 Picasso.get().load(dataSnapshot.child("Profile_Pic").getValue().toString()).into(imageView);
             }
 
@@ -122,6 +127,10 @@ public class SetProfile extends AppCompatActivity {
 
         if(requestCode == 100 && resultCode == RESULT_OK && data != null)
         {
+            loadingBar.setTitle("Sending Image");
+            loadingBar.setMessage("Please wait while your image is uploading");
+            loadingBar.show();
+
             final Uri imageUri = data.getData();
             final StorageReference filePath = userDataStorage.child(mAuth.getCurrentUser().getUid() + ".jpg");
             filePath.putFile(imageUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
@@ -143,6 +152,7 @@ public class SetProfile extends AppCompatActivity {
                                     {
                                         Toast.makeText(SetProfile.this, "Not updated", Toast.LENGTH_LONG).show();
                                     }
+                                    loadingBar.dismiss();
                                 }
                             });
                         }

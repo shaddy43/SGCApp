@@ -15,6 +15,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 public class SignUp extends AppCompatActivity {
 
@@ -73,9 +74,11 @@ public class SignUp extends AppCompatActivity {
                     String userId = mAuth.getCurrentUser().getUid();
                     userDefaultData = FirebaseDatabase.getInstance().getReference().child("users").child(userId);
 
-                    userDefaultData.child("Email_Address").setValue(email);
+                    String deviceToken = FirebaseInstanceId.getInstance().getToken();
+
+                    userDefaultData.child("Device_Token").setValue(deviceToken);
+                    userDefaultData.child("Phone_Number").setValue(email);
                     userDefaultData.child("Name").setValue(name);
-                    //userDefaultData.child("Password").setValue(password);
                     userDefaultData.child("Profile_Pic").setValue(defaultPicUrl);
                     userDefaultData.child("Status").setValue("Hey there i am using SGCApp")
                             .addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -111,5 +114,18 @@ public class SignUp extends AppCompatActivity {
         Intent intent =new Intent(this,Main2Activity.class);
         startActivity(intent);
         finish();
+    }
+
+    public void goToPhoneSignIn(View view)
+    {
+        Intent intent = new Intent(this,PhoneSignIn.class);
+        startActivity(intent);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+
     }
 }
