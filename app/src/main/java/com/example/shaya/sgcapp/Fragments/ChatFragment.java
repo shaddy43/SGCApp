@@ -1,4 +1,4 @@
-package com.example.shaya.sgcapp;
+package com.example.shaya.sgcapp.Fragments;
 
 
 import android.content.Intent;
@@ -12,6 +12,10 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import com.example.shaya.sgcapp.ModelClasses.AllUsers;
+import com.example.shaya.sgcapp.ChatActivity;
+import com.example.shaya.sgcapp.R;
+import com.example.shaya.sgcapp.Adapters.UserAdapter;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;

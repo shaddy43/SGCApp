@@ -13,7 +13,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".PhoneSignIn">
+        <activity android:name=".Authentication.PhoneSignIn">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -28,20 +28,14 @@
             android:name=".AddContact"
             android:parentActivityName=".Main2Activity" />
         <activity android:name=".UsersProfileActivity" />
-        <activity android:name=".GroupChat" />
-        <activity android:name=".SignUp" />
+        <activity android:name=".GroupsPackage.GroupChat" />
+        <activity android:name=".Authentication.SignUp" />
         <activity android:name=".ChatActivity" />
         <activity android:name=".Settings" />
-        <activity android:name=".GroupMemberSelection" />
-        <activity android:name=".GroupSettings"></activity>
-
-
-        <service android:name=".Notifications.MyFirebaseMessagingService">
-            <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
-            </intent-filter>
-        </service>
-
+        <activity android:name=".GroupsPackage.GroupMemberSelection" />
+        <activity android:name=".GroupsPackage.GroupSettings" />
+        <activity android:name=".GroupsPackage.DeleteGroupMembers" />
+        <activity android:name=".GroupsPackage.AddGroupMembers"></activity>
     </application>
 
 </manifest>

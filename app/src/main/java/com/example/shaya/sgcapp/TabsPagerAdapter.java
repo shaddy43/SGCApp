@@ -4,6 +4,11 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
+import com.example.shaya.sgcapp.Fragments.ChatFragment;
+import com.example.shaya.sgcapp.Fragments.ContactsFragment;
+import com.example.shaya.sgcapp.Fragments.GroupsFragment;
+import com.example.shaya.sgcapp.Fragments.RequestsFragment;
+
 class TabsPagerAdapter extends FragmentPagerAdapter {
     public TabsPagerAdapter(FragmentManager fm) {
         super(fm);
@@ -15,14 +20,15 @@ class TabsPagerAdapter extends FragmentPagerAdapter {
         switch(i)
         {
             case 0:
-                RequestsFragment requestsFragment=new RequestsFragment();
-                return requestsFragment;
+                GroupsFragment groupsFragment =new GroupsFragment();
+                return groupsFragment;
+
             case 1:
                 ChatFragment chatFragment=new ChatFragment();
                 return chatFragment;
             case 2:
-                GroupsFragment groupsFragment =new GroupsFragment();
-                return groupsFragment;
+                RequestsFragment requestsFragment=new RequestsFragment();
+                return requestsFragment;
             case 3:
                 ContactsFragment contactsFragment =new ContactsFragment();
                 return contactsFragment;
@@ -41,11 +47,11 @@ class TabsPagerAdapter extends FragmentPagerAdapter {
         switch(i)
         {
             case 0:
-                return "Requests";
+                return "Groups";
             case 1:
                 return "Chats";
             case 2:
-                return "Groups";
+                return "Requests";
             case 3:
                 return "Contacts";
             default:

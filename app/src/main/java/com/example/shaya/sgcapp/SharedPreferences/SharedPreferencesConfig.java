@@ -1,7 +1,9 @@
-package com.example.shaya.sgcapp;
+package com.example.shaya.sgcapp.SharedPreferences;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+
+import com.example.shaya.sgcapp.R;
 
 public class SharedPreferencesConfig {
 

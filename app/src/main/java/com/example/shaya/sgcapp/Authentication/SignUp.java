@@ -1,4 +1,4 @@
-package com.example.shaya.sgcapp;
+package com.example.shaya.sgcapp.Authentication;
 
 import android.content.Intent;
 import android.support.annotation.NonNull;
@@ -9,6 +9,9 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.example.shaya.sgcapp.Main2Activity;
+import com.example.shaya.sgcapp.R;
+import com.example.shaya.sgcapp.SharedPreferences.SharedPreferencesConfig;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
