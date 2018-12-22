@@ -7,7 +7,8 @@
 
     <color name="background">#FFFFFF</color>
     <color name="button">#e13e3e</color>
-    <color name="light">#d6cfcf</color>
+    <color name="light">#FFFFFF</color>
     <color name="link">#FF31528F</color>
     <color name="red">#FFAE232C</color>
+    <color name="black">#000000</color>
 </resources>

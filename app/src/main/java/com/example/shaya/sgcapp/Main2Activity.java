@@ -15,6 +15,7 @@ import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.example.shaya.sgcapp.Authentication.PhoneSignIn;
 import com.example.shaya.sgcapp.GroupsPackage.GroupMemberSelection;
 import com.example.shaya.sgcapp.SharedPreferences.SharedPreferencesConfig;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -114,6 +115,11 @@ public class Main2Activity extends AppCompatActivity {
             updateUserState("offline");
             sp.writeLoginStatus(false);
 
+            /*Intent intent = new Intent(this, PhoneSignIn.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+            finish();*/
+
             Intent i = getBaseContext().getPackageManager()
                     .getLaunchIntentForPackage( getBaseContext().getPackageName() );
             i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -180,6 +186,8 @@ public class Main2Activity extends AppCompatActivity {
 
                                     ref.child("users").child(user).child("user-groups").child(groupKey).setValue("true");
                                     ref.child("groups").child(groupKey).child("Total_Members").setValue(1);
+                                    ref.child("groups").child(groupKey).child("Security").child("Algo").setValue("");
+                                    ref.child("groups").child(groupKey).child("Security").child("key").setValue("");
                                     ref.child("groups").child(groupKey).child("Group_Pic").setValue(defaultGroupPicUrl).addOnCompleteListener(new OnCompleteListener<Void>() {
                                         @Override
                                         public void onComplete(@NonNull Task<Void> task) {

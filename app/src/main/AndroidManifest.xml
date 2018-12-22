@@ -35,7 +35,8 @@
         <activity android:name=".GroupsPackage.GroupMemberSelection" />
         <activity android:name=".GroupsPackage.GroupSettings" />
         <activity android:name=".GroupsPackage.DeleteGroupMembers" />
-        <activity android:name=".GroupsPackage.AddGroupMembers"></activity>
+        <activity android:name=".GroupsPackage.AddGroupMembers" />
+        <activity android:name=".GroupsPackage.GroupSettingsAdvance" />
     </application>
 
 </manifest>
