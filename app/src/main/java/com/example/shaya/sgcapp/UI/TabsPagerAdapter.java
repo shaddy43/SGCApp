@@ -1,13 +1,13 @@
-package com.example.shaya.sgcapp;
+package com.example.shaya.sgcapp.UI;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
-import com.example.shaya.sgcapp.Fragments.ChatFragment;
-import com.example.shaya.sgcapp.Fragments.ContactsFragment;
-import com.example.shaya.sgcapp.Fragments.GroupsFragment;
-import com.example.shaya.sgcapp.Fragments.RequestsFragment;
+import com.example.shaya.sgcapp.UI.Fragments.ChatFragment;
+import com.example.shaya.sgcapp.UI.Fragments.ContactsFragment;
+import com.example.shaya.sgcapp.UI.Fragments.GroupsFragment;
+import com.example.shaya.sgcapp.UI.Fragments.RequestsFragment;
 
 class TabsPagerAdapter extends FragmentPagerAdapter {
     public TabsPagerAdapter(FragmentManager fm) {

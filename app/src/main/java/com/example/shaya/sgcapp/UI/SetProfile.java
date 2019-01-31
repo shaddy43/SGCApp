@@ -1,4 +1,4 @@
-package com.example.shaya.sgcapp;
+package com.example.shaya.sgcapp.UI;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -14,6 +14,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.shaya.sgcapp.R;
+import com.example.shaya.sgcapp.Domain.Validation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -32,19 +34,20 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class SetProfile extends AppCompatActivity {
 
-    EditText name;
-    EditText status;
-    TextView phoneNum;
-    CircleImageView imageView;
-    Button editProfile;
-    Button submit;
+    private EditText name;
+    private EditText status;
+    private TextView phoneNum;
+    private CircleImageView imageView;
+    private Button editProfile;
+    private Button submit;
 
-    FirebaseAuth mAuth;
-    DatabaseReference userData;
-    StorageReference userDataStorage;
+    private FirebaseAuth mAuth;
+    private DatabaseReference userData;
+    private StorageReference userDataStorage;
 
-    ProgressDialog loadingBar;
+    private ProgressDialog loadingBar;
 
+    private Validation validation;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,6 +71,7 @@ public class SetProfile extends AppCompatActivity {
         submit.setVisibility(View.GONE);
 
         loadingBar = new ProgressDialog(this);
+        validation = new Validation();
 
         userData.addValueEventListener(new ValueEventListener() {
             @Override
@@ -98,15 +102,24 @@ public class SetProfile extends AppCompatActivity {
 
     public void submit(View view)
     {
-        name.setEnabled(false);
-        status.setEnabled(false);
-        imageView.setEnabled(false);
+        boolean validateName = validation.validateName(name.getText().toString());
+        //boolean validateStatus = validation.validateStatus(status.getText().toString());
 
-        submit.setVisibility(View.GONE);
-        editProfile.setVisibility(View.VISIBLE);
+        if(validateName )
+        {
+            name.setEnabled(false);
+            status.setEnabled(false);
+            imageView.setEnabled(false);
 
-        userData.child("Name").setValue(name.getText().toString());
-        userData.child("Status").setValue(status.getText().toString());
+            userData.child("Name").setValue(name.getText().toString());
+            userData.child("Status").setValue(status.getText().toString());
+            submit.setVisibility(View.GONE);
+            editProfile.setVisibility(View.VISIBLE);
+        }
+        else
+        {
+            Toast.makeText(this, "Please enter a valid name", Toast.LENGTH_LONG).show();
+        }
 
     }
 
@@ -127,7 +140,7 @@ public class SetProfile extends AppCompatActivity {
 
         if(requestCode == 100 && resultCode == RESULT_OK && data != null)
         {
-            loadingBar.setTitle("Sending Image");
+            loadingBar.setTitle("Uploading Image");
             loadingBar.setMessage("Please wait while your image is uploading");
             loadingBar.show();
 

@@ -1,4 +1,4 @@
-package com.example.shaya.sgcapp.Fragments;
+package com.example.shaya.sgcapp.UI.Fragments;
 
 
 import android.os.Bundle;
@@ -10,9 +10,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
-import com.example.shaya.sgcapp.ModelClasses.AllUsers;
+import com.example.shaya.sgcapp.Domain.ModelClasses.AllUsers;
 import com.example.shaya.sgcapp.R;
-import com.example.shaya.sgcapp.Adapters.UserAdapter;
+import com.example.shaya.sgcapp.TechnicalServices.Adapters.UserAdapter;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -29,18 +29,18 @@ import java.util.ArrayList;
 public class RequestsFragment extends Fragment {
 
 
-    View view;
+    private View view;
 
-    ListView myReqList;
+    private ListView myReqList;
 
-    DatabaseReference reqRef, userRef;
-    FirebaseAuth mAuth;
-    String currentUserId;
+    private DatabaseReference reqRef, userRef;
+    private FirebaseAuth mAuth;
+    private String currentUserId;
 
-    ArrayList<AllUsers> chatRequests;
-    UserAdapter adapter;
+    private ArrayList<AllUsers> chatRequests;
+    private UserAdapter adapter;
 
-    SwipeRefreshLayout refreshLayout;
+    private SwipeRefreshLayout refreshLayout;
 
     public RequestsFragment() {
         // Required empty public constructor

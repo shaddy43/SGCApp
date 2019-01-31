@@ -1,4 +1,4 @@
-package com.example.shaya.sgcapp.Fragments;
+package com.example.shaya.sgcapp.UI.Fragments;
 
 
 import android.content.Intent;
@@ -12,10 +12,10 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
-import com.example.shaya.sgcapp.ModelClasses.AllUsers;
+import com.example.shaya.sgcapp.Domain.ModelClasses.AllUsers;
 import com.example.shaya.sgcapp.R;
-import com.example.shaya.sgcapp.Adapters.UserAdapter;
-import com.example.shaya.sgcapp.UsersProfileActivity;
+import com.example.shaya.sgcapp.TechnicalServices.Adapters.UserAdapter;
+import com.example.shaya.sgcapp.UI.UsersProfileActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -35,17 +35,17 @@ public class ContactsFragment extends Fragment {
     public ContactsFragment() {
         // Required empty public constructor
     }
-    View view;
-    ListView myContactList;
+    private View view;
+    private ListView myContactList;
 
-    DatabaseReference contactsRef, userRef;
-    FirebaseAuth mAuth;
-    String currentUserId;
+    private DatabaseReference contactsRef, userRef;
+    private FirebaseAuth mAuth;
+    private String currentUserId;
 
-    ArrayList<AllUsers> contactsUsers;
-    UserAdapter adapter;
+    private ArrayList<AllUsers> contactsUsers;
+    private UserAdapter adapter;
 
-    SwipeRefreshLayout refreshLayout;
+    private SwipeRefreshLayout refreshLayout;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,

@@ -1,4 +1,4 @@
-package com.example.shaya.sgcapp;
+package com.example.shaya.sgcapp.UI;
 
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -15,9 +15,11 @@ import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.example.shaya.sgcapp.Authentication.PhoneSignIn;
-import com.example.shaya.sgcapp.GroupsPackage.GroupMemberSelection;
-import com.example.shaya.sgcapp.SharedPreferences.SharedPreferencesConfig;
+import com.example.shaya.sgcapp.TechnicalServices.Authentication.PhoneSignIn;
+import com.example.shaya.sgcapp.UI.GroupsPackage.GroupMemberSelection;
+import com.example.shaya.sgcapp.R;
+import com.example.shaya.sgcapp.Domain.SharedPreferences.SharedPreferencesConfig;
+import com.example.shaya.sgcapp.Domain.Validation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -30,17 +32,19 @@ import java.util.HashMap;
 
 public class Main2Activity extends AppCompatActivity {
 
-    TabLayout tLayout;
-    ViewPager vPager;
+    private TabLayout tLayout;
+    private ViewPager vPager;
 
-    TabsPagerAdapter tabsPagerAdapter;
-    DatabaseReference ref;
+    private TabsPagerAdapter tabsPagerAdapter;
+    private DatabaseReference ref;
 
-    FirebaseAuth mAuth;
-    String currentUserId;
+    private FirebaseAuth mAuth;
+    private String currentUserId;
 
-    SharedPreferencesConfig sp;
-    String defaultGroupPicUrl = "https://firebasestorage.googleapis.com/v0/b/sgcapp-8dcbb.appspot.com/o/group_messages_images%2FGroup-icon.png?alt=media&token=3ef7955e-783f-4a71-9224-bba311438fc3";
+    private Validation validation;
+
+    private SharedPreferencesConfig sp;
+    private String defaultGroupPicUrl = "https://firebasestorage.googleapis.com/v0/b/sgcapp-8dcbb.appspot.com/o/group_messages_images%2FGroup-icon.png?alt=media&token=3ef7955e-783f-4a71-9224-bba311438fc3";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,6 +61,8 @@ public class Main2Activity extends AppCompatActivity {
         sp = new SharedPreferencesConfig(this);
 
         mAuth = FirebaseAuth.getInstance();
+
+        validation = new Validation();
     }
 
     @Override
@@ -115,15 +121,15 @@ public class Main2Activity extends AppCompatActivity {
             updateUserState("offline");
             sp.writeLoginStatus(false);
 
-            /*Intent intent = new Intent(this, PhoneSignIn.class);
+            Intent intent = new Intent(this, PhoneSignIn.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
-            finish();*/
+            finish();
 
-            Intent i = getBaseContext().getPackageManager()
+            /*Intent i = getBaseContext().getPackageManager()
                     .getLaunchIntentForPackage( getBaseContext().getPackageName() );
             i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(i);
+            startActivity(i);*/
         }
 
         return super.onOptionsItemSelected(item);
@@ -143,14 +149,22 @@ public class Main2Activity extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int which) {
 
                 String groupName = group.getText().toString();
+                boolean validateGroupName = validation.validateGroupName(groupName);
 
-                if(TextUtils.isEmpty(groupName))
+                if(validateGroupName)
                 {
-                    Toast.makeText(Main2Activity.this, "Please Enter A Group Name ....", Toast.LENGTH_SHORT).show();
+                    if(TextUtils.isEmpty(groupName))
+                    {
+                        Toast.makeText(Main2Activity.this, "Please Enter A Group Name ....", Toast.LENGTH_SHORT).show();
+                    }
+                    else
+                    {
+                        createNewGroup(groupName);
+                    }
                 }
                 else
                 {
-                    createNewGroup(groupName);
+                    Toast.makeText(Main2Activity.this, "Please enter a valid group name", Toast.LENGTH_SHORT).show();
                 }
 
             }

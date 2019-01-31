@@ -1,4 +1,4 @@
-package com.example.shaya.sgcapp.Fragments;
+package com.example.shaya.sgcapp.UI.Fragments;
 
 
 import android.content.Intent;
@@ -12,10 +12,10 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
-import com.example.shaya.sgcapp.ModelClasses.AllUsers;
-import com.example.shaya.sgcapp.ChatActivity;
+import com.example.shaya.sgcapp.Domain.ModelClasses.AllUsers;
+import com.example.shaya.sgcapp.UI.ChatActivity;
 import com.example.shaya.sgcapp.R;
-import com.example.shaya.sgcapp.Adapters.UserAdapter;
+import com.example.shaya.sgcapp.TechnicalServices.Adapters.UserAdapter;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -31,14 +31,14 @@ import java.util.ArrayList;
  */
 public class ChatFragment extends Fragment {
 
-    View view;
-    ListView chatUsersListView;
-    ArrayList<AllUsers> chatUsersList;
-    UserAdapter adapter;
-    DatabaseReference userRef, contactsRef;
-    FirebaseAuth mAuth;
-    String currentUserId;
-    SwipeRefreshLayout refreshLayout;
+    private View view;
+    private ListView chatUsersListView;
+    private ArrayList<AllUsers> chatUsersList;
+    private UserAdapter adapter;
+    private DatabaseReference userRef, contactsRef;
+    private FirebaseAuth mAuth;
+    private String currentUserId;
+    private SwipeRefreshLayout refreshLayout;
 
     public ChatFragment() {
         // Required empty public constructor

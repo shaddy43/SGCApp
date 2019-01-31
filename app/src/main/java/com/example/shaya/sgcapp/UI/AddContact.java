@@ -1,5 +1,5 @@
 
-package com.example.shaya.sgcapp;
+package com.example.shaya.sgcapp.UI;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -13,8 +13,9 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SearchView;
 
-import com.example.shaya.sgcapp.Adapters.UserAdapter;
-import com.example.shaya.sgcapp.ModelClasses.AllUsers;
+import com.example.shaya.sgcapp.TechnicalServices.Adapters.UserAdapter;
+import com.example.shaya.sgcapp.Domain.ModelClasses.AllUsers;
+import com.example.shaya.sgcapp.R;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -25,14 +26,14 @@ import java.util.ArrayList;
 
 public class AddContact extends AppCompatActivity {
 
-    ListView displayList;
-    ArrayList<AllUsers> allUserArray = new ArrayList<>();
-    ArrayList<AllUsers> searchUserArray = new ArrayList<>();
-    UserAdapter adapter;
-    UserAdapter searchAdapter;
-    DatabaseReference reference;
-    SearchView searchView;
-    SwipeRefreshLayout refreshLayout;
+    private ListView displayList;
+    private ArrayList<AllUsers> allUserArray = new ArrayList<>();
+    private ArrayList<AllUsers> searchUserArray = new ArrayList<>();
+    private UserAdapter adapter;
+    private UserAdapter searchAdapter;
+    private DatabaseReference reference;
+    private SearchView searchView;
+    private SwipeRefreshLayout refreshLayout;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
