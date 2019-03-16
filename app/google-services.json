@@ -23,6 +23,14 @@
           }
         },
         {
+          "client_id": "828215405458-o34s7g60ak8or9jcj1gbq57nsse7dnef.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.shaya.sgcapp",
+            "certificate_hash": "fe79422a0fbfe9116f5023704e73be86cfe07660"
+          }
+        },
+        {
           "client_id": "828215405458-c8u5nf2p6ao03ivv27oa6o2o9drofuuj.apps.googleusercontent.com",
           "client_type": 3
         }
