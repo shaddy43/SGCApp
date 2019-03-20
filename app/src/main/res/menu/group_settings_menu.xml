@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+
+    <item
+        android:title="Add Members"
+        android:id="@+id/group_settings_add_members"
+        android:visible="false"
+        >
+    </item>
+
+    <item
+        android:title="Delete Members"
+        android:id="@+id/group_settings_delete_members"
+        android:visible="false"
+        >
+    </item>
+
+    <item
+        android:title="Settings"
+        android:id="@+id/group_settings_advance"
+        android:visible="false"
+        >
+    </item>
+</menu>

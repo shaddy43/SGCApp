@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/custom_chat_bar_layout"
+    android:clickable="true"
+    android:background="@color/colorPrimary"
+    android:padding="8dp"
+    >
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:src="@drawable/red_john"
+        android:id="@+id/custom_chat_bar_image"
+        android:cropToPadding="true"
+        android:layout_marginRight="10dp"/>
+
+    <TextView
+        android:id="@+id/custom_chat_bar_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:text="Display Name"
+        android:textColor="@android:color/background_light"
+        android:textStyle="bold"
+        android:textSize="18sp"
+        />
+
+    <TextView
+        android:id="@+id/custom_chat_bar_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/custom_chat_bar_name"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="3dp"
+        android:text="Last Seen"
+        android:textColor="@android:color/background_light"
+        android:textStyle="bold"
+        android:textSize="14sp"
+        />
+
+</RelativeLayout>

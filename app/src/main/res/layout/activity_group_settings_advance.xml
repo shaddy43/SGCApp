@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".UI.GroupsPackage.GroupSettingsAdvance">
+
+    <TextView
+        android:id="@+id/encryptionAlgo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textSize="22sp"
+        android:textColor="@color/black"
+        android:layout_marginTop="20dp"
+        android:text="Select Encryption Algorithm"
+        android:padding="5dp"
+        />
+
+    <Spinner
+        android:id="@+id/algo_spinner"
+        android:padding="10dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="60dp"
+        android:layout_marginRight="60dp"
+        android:layout_below="@+id/encryptionAlgo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+
+    </Spinner>
+
+    <EditText
+        android:layout_marginTop="80dp"
+        android:layout_marginLeft="60dp"
+        android:layout_marginRight="60dp"
+        android:hint="Please write your groupId"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:visibility="invisible"
+        android:layout_height="wrap_content"
+        android:id="@+id/write_encryption_key"
+        android:layout_below="@id/algo_spinner"
+        />
+    <Button
+        android:id="@+id/set_key_btn"
+        android:layout_below="@id/write_encryption_key"
+        android:layout_marginRight="60dp"
+        android:layout_marginLeft="60dp"
+        android:text="Set groupId"
+        android:textColor="@color/light"
+        android:background="@color/colorPrimary"
+        android:visibility="invisible"
+        android:layout_marginTop="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:layout_below="@id/set_key_btn"
+        android:layout_marginTop="200dp"
+        android:layout_marginLeft="30dp"
+        android:layout_marginRight="30dp"
+        android:textSize="16sp"
+        android:gravity="center"
+        android:id="@+id/GKView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="group groupId here"
+        />
+
+
+</RelativeLayout>

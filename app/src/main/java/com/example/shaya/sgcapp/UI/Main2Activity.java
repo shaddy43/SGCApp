@@ -208,13 +208,13 @@ public class Main2Activity extends AppCompatActivity {
 
                                             if(task.isSuccessful())
                                             {
-                                                DatabaseReference userMessageKeyRef = ref.child("group-messages").child(groupKey).push();
+                                                /*DatabaseReference userMessageKeyRef = ref.child("group-messages").child(groupKey).push();
                                                 String msgPushId = userMessageKeyRef.getKey();
 
                                                 ref.child("group-messages").child(groupKey).child(msgPushId).child("from").setValue(currentUserId);
                                                 ref.child("group-messages").child(groupKey).child(msgPushId).child("message").setValue("I am group leader");
                                                 ref.child("group-messages").child(groupKey).child(msgPushId).child("msgKey").setValue(msgPushId);
-                                                ref.child("group-messages").child(groupKey).child(msgPushId).child("type").setValue("text");
+                                                ref.child("group-messages").child(groupKey).child(msgPushId).child("type").setValue("text");*/
 
                                                 Intent intent = new Intent(Main2Activity.this,GroupMemberSelection.class);
                                                 intent.putExtra("groupKey",groupKey);

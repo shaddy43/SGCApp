@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+    
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:src="@drawable/red_john"
+        android:visibility="gone"
+        android:layout_marginTop="10dp"
+        android:id="@+id/message_profile_image"
+        />
+
+    <LinearLayout
+        android:id="@+id/receiver_linear_layout"
+        android:orientation="vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/receiver_messages_layout"
+        android:layout_toEndOf="@+id/message_profile_image"
+        android:layout_marginTop="3dp"
+        android:layout_alignParentTop="true"
+        android:visibility="gone"
+        android:layout_marginLeft="3dp"
+        android:padding="10dp"
+        >
+
+        <TextView
+            android:id="@+id/receiver_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Name"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:visibility="gone"
+            android:textColor="@android:color/black"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/receiver_messages_layout"
+            android:text="Receiver messages here"
+            android:visibility="gone"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:id="@+id/receiver_messages_text"
+            />
+
+
+        <ImageView
+            android:id="@+id/receiver_messages_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/sender_linear_layout"
+        android:orientation="vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:visibility="gone"
+        android:layout_marginTop="3dp"
+        android:padding="10dp"
+        android:layout_alignParentTop="@+id/receiver_messages_text"
+        android:background="@drawable/sender_messages_layout"
+        >
+
+
+        <TextView
+            android:id="@+id/sender_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Name"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:visibility="gone"
+            android:textColor="@android:color/black"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/sender_messages_text"
+            android:visibility="gone"
+            android:text="Sender messages here"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            />
+
+        <ImageView
+            android:id="@+id/sender_messages_image"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone" />
+    </LinearLayout>
+
+</RelativeLayout>
