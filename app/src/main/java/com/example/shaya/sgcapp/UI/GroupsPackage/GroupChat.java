@@ -1,14 +1,24 @@
 package com.example.shaya.sgcapp.UI.GroupsPackage;
 
+import android.Manifest;
 import android.app.ProgressDialog;
+import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
+import android.os.Build;
+import android.os.Environment;
+import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.content.CursorLoader;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -42,7 +52,9 @@ import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.net.URI;
 import java.net.URL;
+import java.security.spec.ECField;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -54,7 +66,7 @@ public class GroupChat extends AppCompatActivity {
 
     private EditText inputMessage;
     private ImageButton sendMessageButton;
-    private ImageButton sendImageButton;
+    //private ImageButton sendImageButton;
 
     private TextView groupDisplayName, groupDisplayMembers;
     private CircleImageView groupDisplayImage;
@@ -78,6 +90,8 @@ public class GroupChat extends AppCompatActivity {
     private AES aes;
     private String key;
     private String keyVal;
+
+    //private ValueEventListener postListener;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -169,6 +183,35 @@ public class GroupChat extends AppCompatActivity {
 
         messagesList.clear();
 
+        rootRef.child("groups").child(groupId).child("Security").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                key = dataSnapshot.child("key").getValue().toString();
+
+                rootRef.child("groups").child(groupId).child("Security").child("keyVersions").child(key).addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                        if(dataSnapshot.exists())
+                        {
+                            keyVal = dataSnapshot.getValue().toString();
+                            //Toast.makeText(GroupChat.this, ""+keyVal, Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
         rootRef.child("group-messages").child(groupId).addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
@@ -224,7 +267,7 @@ public class GroupChat extends AppCompatActivity {
         groupDisplayImage = findViewById(R.id.custom_chat_bar_image);
         inputMessage = findViewById(R.id.group_chat_input_messages);
         sendMessageButton = findViewById(R.id.group_chat_send_message_btn);
-        sendImageButton = findViewById(R.id.group_chat_send_image);
+        //sendImageButton = findViewById(R.id.group_chat_send_image);
 
         groupChatMessagesList = findViewById(R.id.group_chat_messages_list);
         linearLayoutManager = new LinearLayoutManager(this);
@@ -232,15 +275,15 @@ public class GroupChat extends AppCompatActivity {
 
         loadingBar = new ProgressDialog(this);
 
-        messageAdapter = new MessageAdapter(messagesList, groupId);
+        messageAdapter = new MessageAdapter(messagesList, groupId, this);
         groupChatMessagesList.setAdapter(messageAdapter);
 
-        rootRef.child("groups").child(groupId).child("Security").addListenerForSingleValueEvent(new ValueEventListener() {
+        rootRef.child("groups").child(groupId).child("Security").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 key = dataSnapshot.child("key").getValue().toString();
 
-                rootRef.child("groups").child(groupId).child("Security").child("keyVersions").child(key).addListenerForSingleValueEvent(new ValueEventListener() {
+                rootRef.child("groups").child(groupId).child("Security").child("keyVersions").child(key).addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
@@ -325,6 +368,15 @@ public class GroupChat extends AppCompatActivity {
         startActivityForResult(gallery, 100);
     }
 
+    public void sendAudio(View view)
+    {
+        Intent intent;
+        intent = new Intent(Intent.ACTION_PICK, MediaStore.Audio.Media.EXTERNAL_CONTENT_URI);
+        //intent.setType("audio/*");
+        startActivityForResult(intent, 10);
+    }
+
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -401,12 +453,92 @@ public class GroupChat extends AppCompatActivity {
 
 
         }
+        else if(requestCode == 10 && resultCode == RESULT_OK && data != null)
+        {
+            loadingBar.setTitle("Sending Audio");
+            loadingBar.setMessage("Please wait while your file is uploading");
+            loadingBar.show();
+
+            Uri encUri;
+
+            aes = new AES();
+            final Uri audioUri = data.getData();
+            String path = getAudioPath(audioUri);
+            File file = new File(path);
+            File encFile = new File(aes.encryptImage(file,keyVal));
+            encUri = Uri.fromFile(encFile);
+
+            //Toast.makeText(this, ""+encUri.toString(), Toast.LENGTH_SHORT).show();
+
+            final String messageSenderRef = "group-messages/" + groupId;
+
+            DatabaseReference userMessageKeyRef = rootRef.child("group-messages").child(groupId).push();
+
+            final String msgPushId = userMessageKeyRef.getKey();
+
+            final StorageReference filePath = firebaseStorage.child(msgPushId+".mp3");
+            filePath.putFile(encUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                    if(task.isSuccessful())
+                    {
+                        filePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(Uri uri) {
+                                String downloadUrl = uri.toString();
+
+                                Map msgTextBody = new HashMap();
+                                msgTextBody.put("message", downloadUrl);
+                                msgTextBody.put("type", "audio");
+                                msgTextBody.put("from", currentUserId);
+                                msgTextBody.put("msgKey", msgPushId);
+                                msgTextBody.put("keyVersion", key);
+
+                                Map msgBodyDetails = new HashMap();
+                                msgBodyDetails.put(messageSenderRef + "/" + msgPushId, msgTextBody);
+
+                                rootRef.updateChildren(msgBodyDetails).addOnCompleteListener(new OnCompleteListener() {
+                                    @Override
+                                    public void onComplete(@NonNull Task task) {
+
+                                        if(!task.isSuccessful())
+                                        {
+                                            Toast.makeText(GroupChat.this, "Error sending file", Toast.LENGTH_SHORT).show();
+                                        }
+                                        inputMessage.setText("");
+                                        loadingBar.dismiss();
+                                        finish();
+                                        startActivity(getIntent());
+                                    }
+                                });
+                            }
+                        });
+                    }
+                    else
+                    {
+                        Toast.makeText(GroupChat.this, "File not sent. Please try again", Toast.LENGTH_SHORT).show();
+                        loadingBar.dismiss();
+                    }
+
+                }
+            });
+
+        }
     }
 
     public String getRealPathFromURI(Uri contentUri)
     {
         String[] proj = { MediaStore.Audio.Media.DATA };
         Cursor cursor = managedQuery(contentUri, proj, null, null, null);
+        int column_index = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA);
+        cursor.moveToFirst();
+        return cursor.getString(column_index);
+    }
+
+    private String getAudioPath(Uri uri) {
+        String[] data = {MediaStore.Audio.Media.DATA};
+        CursorLoader loader = new CursorLoader(getApplicationContext(), uri, data, null, null, null);
+        Cursor cursor = loader.loadInBackground();
         int column_index = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA);
         cursor.moveToFirst();
         return cursor.getString(column_index);

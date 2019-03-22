@@ -84,11 +84,11 @@ public class GroupSettingsAdvance extends AppCompatActivity {
                                     if(!encryptionKey.equals(""))
                                     {
                                         rootRef.child("groups").child(groupId).child("Security").child("Algo").setValue(algo);
-                                        rootRef.child("groups").child(groupId).child("Security").child("key").setValue(encryptionKey);
-
                                         rootRef.child("groups").child(groupId).child("Security").child("keyVersions").removeValue();
-                                        rootRef.child("groups").child(groupId).child("Security").child("keyVersions").child("v").setValue(encryptionKey);
                                         rootRef.child("group-messages").child(groupId).removeValue();
+
+                                        rootRef.child("groups").child(groupId).child("Security").child("keyVersions").child("v").setValue(encryptionKey);
+                                        rootRef.child("groups").child(groupId).child("Security").child("key").setValue("v");
 
                                         startActivity(new Intent(GroupSettingsAdvance.this, Main2Activity.class));
                                         Toast.makeText(GroupSettingsAdvance.this, "Group settings updated successfully", Toast.LENGTH_SHORT).show();
@@ -121,25 +121,25 @@ public class GroupSettingsAdvance extends AppCompatActivity {
             }
         });
 
-        rootRef.child("groups").child(groupId).child("Security").child("GKgeneration").addValueEventListener(new ValueEventListener() {
+        rootRef.child("groups").child(groupId).child("Security").child("key").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                if(dataSnapshot.exists())
-                {
-                    String groupKey = "";
-                    for(DataSnapshot d : dataSnapshot.getChildren())
-                    {
-                       groupKey = groupKey.concat(d.getValue().toString());
+                String keyVersion = dataSnapshot.getValue().toString();
+
+                rootRef.child("groups").child(groupId).child("Security").child("keyVersions").child(keyVersion).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                        GK = dataSnapshot.getValue().toString();
+                        GKview.setText(GK);
                     }
 
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                    try {
-                        generateKey(groupKey);
-                    } catch (Exception e) {
-                        e.printStackTrace();
                     }
-                }
+                });
             }
 
             @Override
@@ -149,35 +149,4 @@ public class GroupSettingsAdvance extends AppCompatActivity {
         });
     }
 
-    private void generateKey(String groupKey) throws Exception {
-
-        MessageDigest m = MessageDigest.getInstance("SHA-256");
-        m.reset();
-        m.update(groupKey.getBytes());
-        byte[] digest = m.digest();
-        BigInteger bigInt = new BigInteger(1, digest);
-        String hashText = bigInt.toString(16);
-        GK = hashText;
-
-        GKview.setText(GK);
-
-        /*rootRef.child("groups").child(groupId).child("Security").child("keyVersions").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                if(dataSnapshot.exists())
-                {
-                    int count = (int) dataSnapshot.getChildrenCount();
-                    String version = "v"+count;
-
-                    rootRef.child("groups").child(groupId).child("Security").child("keyVersions").child(version).setValue(GK);
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });*/
-    }
 }

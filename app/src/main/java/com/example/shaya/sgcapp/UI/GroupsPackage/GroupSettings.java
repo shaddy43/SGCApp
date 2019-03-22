@@ -93,6 +93,7 @@ public class GroupSettings extends AppCompatActivity {
         loadingBar = new ProgressDialog(this);
 
         validation = new Validation();
+
     }
 
     @Override
@@ -178,6 +179,7 @@ public class GroupSettings extends AppCompatActivity {
                 }
                 else if(groupUserStatus.equals("member"))
                 {
+                    submit.setVisibility(View.GONE);
                     group_name.setEnabled(false);
                     group_btn.setText("Leave Group");
                     group_btn.setOnClickListener(new View.OnClickListener() {
@@ -352,6 +354,11 @@ public class GroupSettings extends AppCompatActivity {
                                                                                         startActivity(intent);
                                                                                         loadingBar.dismiss();
                                                                                         finish();
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        Toast.makeText(GroupSettings.this, "Error. Check internet", Toast.LENGTH_SHORT).show();
+                                                                                        loadingBar.dismiss();
                                                                                     }
                                                                                 }
                                                                             });

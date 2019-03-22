@@ -1,6 +1,10 @@
 package com.example.shaya.sgcapp.TechnicalServices.Adapters;
 
+import android.content.Context;
 import android.graphics.Color;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.support.annotation.NonNull;
@@ -8,13 +12,16 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.shaya.sgcapp.Domain.ModelClasses.Messages;
 import com.example.shaya.sgcapp.R;
 import com.example.shaya.sgcapp.TechnicalServices.Security.AES;
+import com.example.shaya.sgcapp.UI.GroupsPackage.GroupChat;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -43,11 +50,13 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     private String groupId;
     String rootPath;
     String singleMsgKey;
+    Context context;
 
-    public MessageAdapter(List<Messages> userMessagesList, String groupId)
+    public MessageAdapter(List<Messages> userMessagesList, String groupId, Context context)
     {
         this.userMessagesList = userMessagesList;
         this.groupId = groupId;
+        this.context = context;
     }
 
 
@@ -58,6 +67,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         public ImageView receiverMsgImage, senderMsgImage;
         public TextView senderName, receiverName;
         public LinearLayout receiverLinearLayout, senderLinearLayout;
+        public Button senderMsgAudio, receiverMsgAudio;
 
         public MessageViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -69,6 +79,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             senderMsgImage = itemView.findViewById(R.id.sender_messages_image);
             senderName = itemView.findViewById(R.id.sender_name);
             receiverName = itemView.findViewById(R.id.receiver_name);
+            senderMsgAudio = itemView.findViewById(R.id.sender_audio_btn);
+            receiverMsgAudio = itemView.findViewById(R.id.receiver_audio_btn);
 
             receiverLinearLayout = itemView.findViewById(R.id.receiver_linear_layout);
             senderLinearLayout = itemView.findViewById(R.id.sender_linear_layout);
@@ -158,6 +170,36 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                             e.printStackTrace();
                         }
                     }
+                    else if(fromMessageType.equals("audio"))
+                    {
+                        decryptMsg[0] = "";
+                        AES aes = new AES();
+                        try {
+
+                            rootPath = Environment.getExternalStorageDirectory()
+                                    .getAbsolutePath() + "/apps/sgcapp/temp/";
+                            File root = new File(rootPath);
+
+                            if (!root.exists()) {
+                                root.mkdirs();
+                            }
+
+                            new Downloader().execute(messages.getMessage(), rootPath, messages.getMsgKey());
+
+                            File downloadedFile = new File(rootPath+messages.getMsgKey()+".crypt");
+
+                            if(downloadedFile.exists())
+                            {
+                                decryptMsg[0] = aes.decryptImage(new File(rootPath.concat(messages.getMsgKey())), singleMsgKey);
+                            }
+
+                            //File dltFile = new File(rootPath+messages.getMsgKey()+".crypt");
+                            //dltFile.delete();
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
 
                     userRef = FirebaseDatabase.getInstance().getReference().child("users").child(fromUserId);
 
@@ -203,6 +245,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                         messageViewHolder.senderMsgImage.setVisibility(View.GONE);
                         messageViewHolder.senderLinearLayout.setVisibility(View.GONE);
                         messageViewHolder.receiverLinearLayout.setVisibility(View.GONE);
+                        messageViewHolder.senderMsgAudio.setVisibility(View.GONE);
+                        messageViewHolder.receiverMsgAudio.setVisibility(View.GONE);
 
                         if(fromUserId.equals(messageSenderId))
                         {
@@ -230,6 +274,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                         messageViewHolder.senderMsgText.setVisibility(View.GONE);
                         messageViewHolder.receiverMsgImage.setVisibility(View.GONE);
                         messageViewHolder.senderMsgImage.setVisibility(View.GONE);
+                        messageViewHolder.senderMsgAudio.setVisibility(View.GONE);
+                        messageViewHolder.receiverMsgAudio.setVisibility(View.GONE);
 
                         if (fromUserId.equals(messageSenderId)) {
                             File imgFile = new File(decryptMsg[0]);
@@ -260,30 +306,108 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                         }
 
                     }
+                    else if(fromMessageType.equals("audio"))
+                    {
+                        messageViewHolder.receiverName.setVisibility(View.GONE);
+                        messageViewHolder.senderName.setVisibility(View.GONE);
+                        messageViewHolder.senderLinearLayout.setVisibility(View.GONE);
+                        messageViewHolder.receiverLinearLayout.setVisibility(View.GONE);
+                        messageViewHolder.receiverMsgText.setVisibility(View.GONE);
+                        messageViewHolder.receiverProfileImage.setVisibility(View.GONE);
+                        messageViewHolder.senderMsgText.setVisibility(View.GONE);
+                        messageViewHolder.receiverMsgImage.setVisibility(View.GONE);
+                        messageViewHolder.senderMsgImage.setVisibility(View.GONE);
+                        messageViewHolder.senderMsgAudio.setVisibility(View.GONE);
+                        messageViewHolder.receiverMsgAudio.setVisibility(View.GONE);
 
-                }
+                        if (fromUserId.equals(messageSenderId))
+                        {
+                            File audioFile = new File(decryptMsg[0]);
 
-            }
+                            if(audioFile.exists())
+                            {
+                                messageViewHolder.senderLinearLayout.setVisibility(View.VISIBLE);
+                                messageViewHolder.senderMsgAudio.setVisibility(View.VISIBLE);
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                messageViewHolder.senderMsgAudio.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
 
-            }
-        });
+                                        final MediaPlayer mediaPlayer = new MediaPlayer();
+                                        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                                        Uri uri = Uri.parse(decryptMsg[0]);
 
-    }
+                                        try
+                                        {
+                                            mediaPlayer.setDataSource(context,uri);
+                                            mediaPlayer.prepare();
+                                            mediaPlayer.start();
+                                            Toast.makeText(context, "Playback started", Toast.LENGTH_LONG).show();
+                                            messageViewHolder.senderMsgAudio.setEnabled(false);
+                                        }catch (Exception e)
+                                        {
 
-    private void getKey(String keyVersion) {
+                                        }
 
-        rootRef = FirebaseDatabase.getInstance().getReference();
+                                        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                                            @Override
+                                            public void onCompletion(MediaPlayer mp) {
 
-        rootRef.child("groups").child(groupId).child("Security").child("keyVersions").child(keyVersion).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                messageViewHolder.senderMsgAudio.setEnabled(true);
+                                                mediaPlayer.release();
+                                                Toast.makeText(context, "Playback finished", Toast.LENGTH_LONG).show();
+                                            }
+                                        });
 
-                if(dataSnapshot.exists())
-                {
-                    singleMsgKey = dataSnapshot.getValue().toString();
+                                    }
+                                });
+                            }
+                        }
+                        else
+                        {
+                            final File audioFile = new File(decryptMsg[0]);
+
+                            if(audioFile.exists())
+                            {
+                                messageViewHolder.receiverLinearLayout.setVisibility(View.VISIBLE);
+                                messageViewHolder.receiverProfileImage.setVisibility(View.VISIBLE);
+                                messageViewHolder.receiverMsgAudio.setVisibility(View.VISIBLE);
+
+                                messageViewHolder.receiverMsgAudio.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+
+                                        final MediaPlayer mediaPlayer = new MediaPlayer();
+                                        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                                        Uri uri = Uri.parse(decryptMsg[0]);
+
+                                        try
+                                        {
+                                            mediaPlayer.setDataSource(context,uri);
+                                            mediaPlayer.prepare();
+                                            mediaPlayer.start();
+                                            Toast.makeText(context, "Playback started", Toast.LENGTH_SHORT).show();
+                                            messageViewHolder.receiverMsgAudio.setEnabled(false);
+                                        }catch (Exception e)
+                                        {
+
+                                        }
+
+                                        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                                            @Override
+                                            public void onCompletion(MediaPlayer mp) {
+
+                                                messageViewHolder.receiverMsgAudio.setEnabled(true);
+                                                mediaPlayer.release();
+                                                Toast.makeText(context, "Playback finished", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                        }
+                    }
+
                 }
 
             }
@@ -305,6 +429,11 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
 class Downloader extends AsyncTask<String, String, String>
 {
+    /*Context context;
+
+    public Downloader(Context context) {
+        this.context = context;
+    }*/
 
     @Override
     protected void onPreExecute() {

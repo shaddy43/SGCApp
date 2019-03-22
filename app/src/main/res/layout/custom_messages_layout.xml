@@ -54,6 +54,15 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:visibility="gone" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="play audio"
+            android:id="@+id/receiver_audio_btn"
+            android:visibility="gone"
+            />
+
     </LinearLayout>
 
     <LinearLayout
@@ -98,6 +107,15 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:visibility="gone" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="play audio"
+            android:id="@+id/sender_audio_btn"
+            android:visibility="gone"
+            />
+
     </LinearLayout>
 
 </RelativeLayout>

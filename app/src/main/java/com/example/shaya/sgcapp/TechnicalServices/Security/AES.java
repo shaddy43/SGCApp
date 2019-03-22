@@ -1,6 +1,12 @@
 package com.example.shaya.sgcapp.TechnicalServices.Security;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.support.v4.content.ContextCompat;
 import android.util.Base64;
+import android.widget.Toast;
+
+import com.example.shaya.sgcapp.UI.GroupsPackage.GroupChat;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -53,7 +59,6 @@ public class AES {
 
     public String encryptImage(File file, String password)
     {
-
         try
         {
             FileInputStream fis = new FileInputStream(file);

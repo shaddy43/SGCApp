@@ -43,8 +43,17 @@
             android:paddingBottom="15dp"
             />
 
+        <ImageButton
+            android:id="@+id/group_chat_send_audio"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            android:onClick="sendAudio"
+            android:src="@drawable/ic_audiotrack_black"
+            android:visibility="visible"
+            />
+
         <EditText
-            android:layout_width="275dp"
+            android:layout_width="225dp"
             android:layout_height="wrap_content"
             android:id="@+id/group_chat_input_messages"
             android:hint="Type message here ..."
