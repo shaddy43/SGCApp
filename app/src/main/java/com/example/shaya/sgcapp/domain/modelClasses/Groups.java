@@ -1,4 +1,4 @@
-package com.example.shaya.sgcapp.Domain.ModelClasses;
+package com.example.shaya.sgcapp.domain.modelClasses;
 
 public class Groups {
 

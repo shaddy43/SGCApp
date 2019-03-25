@@ -1,4 +1,4 @@
-package com.example.shaya.sgcapp.TechnicalServices.Authentication;
+package com.example.shaya.sgcapp;
 
 import android.content.Intent;
 import android.support.annotation.NonNull;
@@ -10,8 +10,7 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.shaya.sgcapp.UI.Main2Activity;
-import com.example.shaya.sgcapp.R;
-import com.example.shaya.sgcapp.Domain.SharedPreferences.SharedPreferencesConfig;
+import com.example.shaya.sgcapp.domain.sharedPreferences.SharedPreferencesConfig;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -121,7 +120,7 @@ public class SignUp extends AppCompatActivity {
 
     public void goToPhoneSignIn(View view)
     {
-        Intent intent = new Intent(this,PhoneSignIn.class);
+        Intent intent = new Intent(this, Authentication.class);
         startActivity(intent);
     }
 

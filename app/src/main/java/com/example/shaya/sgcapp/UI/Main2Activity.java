@@ -2,7 +2,6 @@ package com.example.shaya.sgcapp.UI;
 
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
@@ -15,13 +14,12 @@ import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.example.shaya.sgcapp.TechnicalServices.Authentication.PhoneSignIn;
-import com.example.shaya.sgcapp.UI.GroupsPackage.GroupMemberSelection;
+import com.example.shaya.sgcapp.Authentication;
+import com.example.shaya.sgcapp.GroupsConfig;
+import com.example.shaya.sgcapp.LocalDatabaseHelper;
 import com.example.shaya.sgcapp.R;
-import com.example.shaya.sgcapp.Domain.SharedPreferences.SharedPreferencesConfig;
-import com.example.shaya.sgcapp.Domain.Validation;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
+import com.example.shaya.sgcapp.domain.sharedPreferences.SharedPreferencesConfig;
+import com.example.shaya.sgcapp.domain.Validation;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -42,9 +40,11 @@ public class Main2Activity extends AppCompatActivity {
     private String currentUserId;
 
     private Validation validation;
+    private GroupsConfig config;
 
     private SharedPreferencesConfig sp;
-    private String defaultGroupPicUrl = "https://firebasestorage.googleapis.com/v0/b/sgcapp-8dcbb.appspot.com/o/group_messages_images%2FGroup-icon.png?alt=media&token=3ef7955e-783f-4a71-9224-bba311438fc3";
+    private LocalDatabaseHelper dp;
+    //private String defaultGroupPicUrl = "https://firebasestorage.googleapis.com/v0/b/sgcapp-8dcbb.appspot.com/o/group_messages_images%2FGroup-icon.png?alt=media&token=3ef7955e-783f-4a71-9224-bba311438fc3";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,6 +63,8 @@ public class Main2Activity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
 
         validation = new Validation();
+        config = new GroupsConfig();
+        dp = new LocalDatabaseHelper(this);
     }
 
     @Override
@@ -121,7 +123,7 @@ public class Main2Activity extends AppCompatActivity {
             updateUserState("offline");
             sp.writeLoginStatus(false);
 
-            Intent intent = new Intent(this, PhoneSignIn.class);
+            Intent intent = new Intent(this, Authentication.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
             finish();
@@ -182,7 +184,7 @@ public class Main2Activity extends AppCompatActivity {
 
     private void createNewGroup(final String groupName) {
 
-        final String user = mAuth.getCurrentUser().getUid();
+        /*final String user = mAuth.getCurrentUser().getUid();
 
         DatabaseReference groupIdKeyRef = ref.child("groups").push();
         final String groupKey = groupIdKeyRef.getKey();
@@ -208,13 +210,13 @@ public class Main2Activity extends AppCompatActivity {
 
                                             if(task.isSuccessful())
                                             {
-                                                /*DatabaseReference userMessageKeyRef = ref.child("group-messages").child(groupKey).push();
+                                                *//*DatabaseReference userMessageKeyRef = ref.child("group-messages").child(groupKey).push();
                                                 String msgPushId = userMessageKeyRef.getKey();
 
                                                 ref.child("group-messages").child(groupKey).child(msgPushId).child("from").setValue(currentUserId);
                                                 ref.child("group-messages").child(groupKey).child(msgPushId).child("message").setValue("I am group leader");
                                                 ref.child("group-messages").child(groupKey).child(msgPushId).child("msgKey").setValue(msgPushId);
-                                                ref.child("group-messages").child(groupKey).child(msgPushId).child("type").setValue("text");*/
+                                                ref.child("group-messages").child(groupKey).child(msgPushId).child("type").setValue("text");*//*
 
                                                 Intent intent = new Intent(Main2Activity.this,GroupMemberSelection.class);
                                                 intent.putExtra("groupKey",groupKey);
@@ -235,8 +237,12 @@ public class Main2Activity extends AppCompatActivity {
                     Toast.makeText(Main2Activity.this, "Group not created. Check Internet", Toast.LENGTH_SHORT).show();
                 }
             }
-        });
+        });*/
 
+        String groupKey = config.createGroup(groupName);
+        Intent intent = new Intent(Main2Activity.this,GroupMemberSelection.class);
+        intent.putExtra("groupKey",groupKey);
+        startActivity(intent);
     }
 
     public void updateUserState(String state)

@@ -1,4 +1,4 @@
-package com.example.shaya.sgcapp.UI.GroupsPackage;
+package com.example.shaya.sgcapp.UI;
 
 import android.content.Intent;
 import android.support.annotation.NonNull;
@@ -12,10 +12,10 @@ import android.widget.AbsListView;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.example.shaya.sgcapp.Domain.ModelClasses.AllUsers;
-import com.example.shaya.sgcapp.UI.Main2Activity;
+import com.example.shaya.sgcapp.domain.modelClasses.Users;
+import com.example.shaya.sgcapp.GroupsConfig;
 import com.example.shaya.sgcapp.R;
-import com.example.shaya.sgcapp.TechnicalServices.Adapters.UserAdapter;
+import com.example.shaya.sgcapp.adapters.UserAdapter;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -23,14 +23,12 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.math.BigInteger;
-import java.security.MessageDigest;
 import java.util.ArrayList;
 
 public class DeleteGroupMembers extends AppCompatActivity {
 
     private ListView groupMembersList;
-    private ArrayList<AllUsers> groupMembers;
+    private ArrayList<Users> groupMembers;
     private UserAdapter adapter;
     private ArrayList<String> deleteMembers;
     private int count = 0;
@@ -39,6 +37,7 @@ public class DeleteGroupMembers extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private String currentUserId;
     private String GK = "";
+    private GroupsConfig config;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +54,7 @@ public class DeleteGroupMembers extends AppCompatActivity {
         groupMembersList = findViewById(R.id.delete_group_members_listView);
 
         rootRef = FirebaseDatabase.getInstance().getReference();
+        config = new GroupsConfig();
 
 
         rootRef.child("group-users").child(groupId).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -73,7 +73,7 @@ public class DeleteGroupMembers extends AppCompatActivity {
                                 @Override
                                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                                    AllUsers data = new AllUsers();
+                                    Users data = new Users();
                                     data.setName(dataSnapshot.child("Name").getValue().toString());
                                     data.setStatus(dataSnapshot.child("Status").getValue().toString());
                                     data.setProfile_Pic(dataSnapshot.child("Profile_Pic").getValue().toString());
@@ -111,7 +111,7 @@ public class DeleteGroupMembers extends AppCompatActivity {
                 public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
 
                     count++;
-                    AllUsers data = groupMembers.get(position);
+                    Users data = groupMembers.get(position);
                     deleteMembers.add(data.getUserId());
                     mode.setTitle(count + " items selected");
 
@@ -138,49 +138,11 @@ public class DeleteGroupMembers extends AppCompatActivity {
 
                     if (id == R.id.done_selection_for_deletion) {
 
-                        for (int i=0;i<deleteMembers.size();i++)
-                        {
-                            rootRef.child("group-users").child(groupId).child(deleteMembers.get(i)).removeValue();
-                            rootRef.child("users").child(deleteMembers.get(i)).child("user-groups").child(groupId).removeValue();
-                            rootRef.child("groups").child(groupId).child("Security").child("GKgeneration").child(deleteMembers.get(i)).removeValue();
-                        }
-
-                        rootRef.child("group-users").child(groupId).addListenerForSingleValueEvent(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                long c = dataSnapshot.getChildrenCount();
-                                rootRef.child("groups").child(groupId).child("Total_Members").setValue(c);
-
-                                generateGroupKey();
-
-                                rootRef.child("groups").child(groupId).child("Security").child("keyVersions").addListenerForSingleValueEvent(new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                                        if(dataSnapshot.exists())
-                                        {
-                                            int count = (int) dataSnapshot.getChildrenCount();
-                                            rootRef.child("groups").child(groupId).child("Security").child("keyVersions").child("v"+count).setValue(GK);
-                                            rootRef.child("groups").child(groupId).child("Security").child("key").setValue("v"+count);
-
-                                            startActivity(new Intent(DeleteGroupMembers.this,Main2Activity.class));
-                                            Toast.makeText(DeleteGroupMembers.this, "Group Updated Successfully", Toast.LENGTH_SHORT).show();
-                                            finish();
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                    }
-                                });
-                            }
-
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                            }
-                        });
+                        config.deleteGroupMembers(deleteMembers,groupId);
+                        config.updateGroup(groupId,DeleteGroupMembers.this);
+                        startActivity(new Intent(DeleteGroupMembers.this,Main2Activity.class));
+                        Toast.makeText(DeleteGroupMembers.this, "Group Updated Successfully", Toast.LENGTH_SHORT).show();
+                        finish();
 
                         return true;
                     }
@@ -198,45 +160,4 @@ public class DeleteGroupMembers extends AppCompatActivity {
             });
 
         }
-
-    private void generateGroupKey() {
-
-        rootRef.child("groups").child(groupId).child("Security").child("GKgeneration").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                if(dataSnapshot.exists())
-                {
-                    String groupKey = "";
-                    for(DataSnapshot d : dataSnapshot.getChildren())
-                    {
-                        groupKey = groupKey.concat(d.getValue().toString());
-                    }
-
-                    try {
-                        generateKey(groupKey);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
-    }
-
-    private void generateKey(String groupKey) throws Exception {
-
-        MessageDigest m = MessageDigest.getInstance("SHA-256");
-        m.reset();
-        m.update(groupKey.getBytes());
-        byte[] digest = m.digest();
-        BigInteger bigInt = new BigInteger(1, digest);
-        String hashText = bigInt.toString(16);
-        GK = hashText;
-    }
 }

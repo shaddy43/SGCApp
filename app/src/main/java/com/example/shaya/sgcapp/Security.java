@@ -1,29 +1,22 @@
-package com.example.shaya.sgcapp.TechnicalServices.Security;
+package com.example.shaya.sgcapp;
 
-import android.Manifest;
-import android.content.pm.PackageManager;
-import android.support.v4.content.ContextCompat;
 import android.util.Base64;
-import android.widget.Toast;
-
-import com.example.shaya.sgcapp.UI.GroupsPackage.GroupChat;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.security.MessageDigest;
-import java.util.Arrays;
 
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.spec.SecretKeySpec;
 
-public class AES {
+public class Security {
 
     private String AES = "AES";
 
-    public AES() {
+    public Security() {
 
     }
 
@@ -57,7 +50,7 @@ public class AES {
         return secretKeySpec;
     }
 
-    public String encryptImage(File file, String password)
+    public String encryptFile(File file, String password)
     {
         try
         {
@@ -67,7 +60,7 @@ public class AES {
             MessageDigest sha = MessageDigest.getInstance("SHA-1");
             key = sha.digest(key);
             key = Arrays.copyOf(key,16);
-            SecretKeySpec sks = new SecretKeySpec(key, "AES");*/
+            SecretKeySpec sks = new SecretKeySpec(key, "Security");*/
             SecretKeySpec sks = generateKey(password);
             Cipher cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.ENCRYPT_MODE, sks);
@@ -88,7 +81,7 @@ public class AES {
         }
     }
 
-    public String decryptImage(File file, String password)
+    public String decryptFile(File file, String password)
     {
 
         try
@@ -100,7 +93,7 @@ public class AES {
             MessageDigest sha = MessageDigest.getInstance("SHA-1");
             key = sha.digest(key);
             key = Arrays.copyOf(key,16);
-            SecretKeySpec sks = new SecretKeySpec(key, "AES");*/
+            SecretKeySpec sks = new SecretKeySpec(key, "Security");*/
             SecretKeySpec sks = generateKey(password);
             Cipher cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.DECRYPT_MODE, sks);

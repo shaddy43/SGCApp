@@ -1,4 +1,4 @@
-package com.example.shaya.sgcapp.UI.Fragments;
+package com.example.shaya.sgcapp.UI;
 
 
 import android.os.Bundle;
@@ -10,9 +10,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
-import com.example.shaya.sgcapp.Domain.ModelClasses.AllUsers;
+import com.example.shaya.sgcapp.domain.modelClasses.Users;
 import com.example.shaya.sgcapp.R;
-import com.example.shaya.sgcapp.TechnicalServices.Adapters.UserAdapter;
+import com.example.shaya.sgcapp.adapters.UserAdapter;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -37,7 +37,7 @@ public class RequestsFragment extends Fragment {
     private FirebaseAuth mAuth;
     private String currentUserId;
 
-    private ArrayList<AllUsers> chatRequests;
+    private ArrayList<Users> chatRequests;
     private UserAdapter adapter;
 
     private SwipeRefreshLayout refreshLayout;
@@ -92,7 +92,7 @@ public class RequestsFragment extends Fragment {
 
                                 @Override
                                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                    AllUsers data = new AllUsers();
+                                    Users data = new Users();
                                     data.setName(dataSnapshot.child("Name").getValue().toString());
                                     data.setStatus(dataSnapshot.child("Status").getValue().toString());
                                     data.setProfile_Pic(dataSnapshot.child("Profile_Pic").getValue().toString());

@@ -1,4 +1,4 @@
-package com.example.shaya.sgcapp.TechnicalServices.Adapters;
+package com.example.shaya.sgcapp.adapters;
 
 import android.graphics.Color;
 import android.support.annotation.NonNull;
@@ -10,8 +10,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.example.shaya.sgcapp.Domain.ModelClasses.Messages;
 import com.example.shaya.sgcapp.R;
+import com.example.shaya.sgcapp.domain.modelClasses.Messages;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;

@@ -1,4 +1,4 @@
-package com.example.shaya.sgcapp.TechnicalServices.Adapters;
+package com.example.shaya.sgcapp.adapters;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -9,8 +9,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.shaya.sgcapp.Domain.ModelClasses.AllUsers;
 import com.example.shaya.sgcapp.R;
+import com.example.shaya.sgcapp.domain.modelClasses.Users;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -28,12 +28,12 @@ public class UserAdapter extends BaseAdapter {
     private FirebaseAuth mAuth;
     private String currentUserId;
 
-    private ArrayList<AllUsers> mList;
+    private ArrayList<Users> mList;
     private Context mContext;
     private boolean visibilityStat;
     private boolean onlineState;
 
-    public UserAdapter(ArrayList<AllUsers> mList, Context mContext, boolean visibilityStat, boolean onlineState) {
+    public UserAdapter(ArrayList<Users> mList, Context mContext, boolean visibilityStat, boolean onlineState) {
         this.mList = mList;
         this.mContext = mContext;
         this.visibilityStat = visibilityStat;
@@ -58,7 +58,7 @@ public class UserAdapter extends BaseAdapter {
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
 
-        View view = View.inflate(mContext,R.layout.user_display_layout,null);
+        View view = View.inflate(mContext, R.layout.user_display_layout,null);
 
         TextView name = view.findViewById(R.id.user_display_name);
         TextView status = view.findViewById(R.id.user_display_status);

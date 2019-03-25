@@ -1,7 +1,8 @@
-package com.example.shaya.sgcapp.UI.GroupsPackage;
+package com.example.shaya.sgcapp.UI;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -15,16 +16,14 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.shaya.sgcapp.UI.Main2Activity;
+import com.example.shaya.sgcapp.GroupsConfig;
+import com.example.shaya.sgcapp.LocalDatabaseHelper;
 import com.example.shaya.sgcapp.R;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
-import java.math.BigInteger;
-import java.security.MessageDigest;
 
 public class GroupSettingsAdvance extends AppCompatActivity {
 
@@ -36,6 +35,8 @@ public class GroupSettingsAdvance extends AppCompatActivity {
     private DatabaseReference rootRef;
     private String GK;
     private TextView GKview;
+    private GroupsConfig config;
+    private LocalDatabaseHelper db;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,6 +52,29 @@ public class GroupSettingsAdvance extends AppCompatActivity {
 
         rootRef = FirebaseDatabase.getInstance().getReference();
         spinner = findViewById(R.id.algo_spinner);
+
+        config = new GroupsConfig();
+        db = new LocalDatabaseHelper(this);
+
+        /*Cursor res = db.getData(groupId,"v");
+        if(res.getCount() == 0)
+        {
+            Toast.makeText(this, "No data found", Toast.LENGTH_LONG).show();
+        }
+        else
+        {
+            StringBuffer buffer = new StringBuffer();
+            while(res.moveToNext())
+            {
+                buffer.append("Key Value : "+res.getString(2)+"\n");
+            }
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setCancelable(true);
+            builder.setTitle("Show");
+            builder.setMessage(buffer.toString());
+            builder.show();
+        }*/
 
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,R.array.algorithms_array, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -83,12 +107,13 @@ public class GroupSettingsAdvance extends AppCompatActivity {
 
                                     if(!encryptionKey.equals(""))
                                     {
-                                        rootRef.child("groups").child(groupId).child("Security").child("Algo").setValue(algo);
+                                        config.changeEncryptionKey(groupId, algo, encryptionKey, GroupSettingsAdvance.this);
+                                        /*rootRef.child("groups").child(groupId).child("Security").child("Algo").setValue(algo);
                                         rootRef.child("groups").child(groupId).child("Security").child("keyVersions").removeValue();
                                         rootRef.child("group-messages").child(groupId).removeValue();
 
                                         rootRef.child("groups").child(groupId).child("Security").child("keyVersions").child("v").setValue(encryptionKey);
-                                        rootRef.child("groups").child(groupId).child("Security").child("key").setValue("v");
+                                        rootRef.child("groups").child(groupId).child("Security").child("key").setValue("v");*/
 
                                         startActivity(new Intent(GroupSettingsAdvance.this, Main2Activity.class));
                                         Toast.makeText(GroupSettingsAdvance.this, "Group settings updated successfully", Toast.LENGTH_SHORT).show();
@@ -125,21 +150,35 @@ public class GroupSettingsAdvance extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                String keyVersion = dataSnapshot.getValue().toString();
+                final String keyVersion = dataSnapshot.getValue().toString();
 
-                rootRef.child("groups").child(groupId).child("Security").child("keyVersions").child(keyVersion).addListenerForSingleValueEvent(new ValueEventListener() {
+                /*Cursor res = db.getData(groupId,keyVersion);
+                if(res.getCount() != 0)
+                {
+                    StringBuffer buffer = new StringBuffer();
+                    while(res.moveToNext())
+                    {
+                        buffer.append("Key Value : "+res.getString(2)+"\n");
+                        //GK = res.getString(2);
+
+                    }
+                    GKview.setText(buffer.toString());
+                }
+*/
+                /*rootRef.child("groups").child(groupId).child("Security").child("keyVersions").child(keyVersion).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
                         GK = dataSnapshot.getValue().toString();
                         GKview.setText(GK);
+                        //db.insertData(keyVersion,GK);
                     }
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError databaseError) {
 
                     }
-                });
+                });*/
             }
 
             @Override

@@ -1,4 +1,4 @@
-package com.example.shaya.sgcapp.TechnicalServices.Authentication;
+package com.example.shaya.sgcapp;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -11,8 +11,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.shaya.sgcapp.UI.Main2Activity;
-import com.example.shaya.sgcapp.R;
-import com.example.shaya.sgcapp.Domain.SharedPreferences.SharedPreferencesConfig;
+import com.example.shaya.sgcapp.domain.sharedPreferences.SharedPreferencesConfig;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseException;
@@ -26,7 +25,7 @@ import com.google.firebase.iid.FirebaseInstanceId;
 
 import java.util.concurrent.TimeUnit;
 
-public class PhoneSignIn extends AppCompatActivity {
+public class Authentication extends AppCompatActivity {
 
     private Button sendVerificationCode;
     private Button verifyAccount;
@@ -79,7 +78,7 @@ public class PhoneSignIn extends AppCompatActivity {
 
                 if(phoneNumber.isEmpty())
                 {
-                    Toast.makeText(PhoneSignIn.this, "Please enter a phone number", Toast.LENGTH_LONG).show();
+                    Toast.makeText(Authentication.this, "Please enter a phone number", Toast.LENGTH_LONG).show();
                 }
                 else
                 {
@@ -96,7 +95,7 @@ public class PhoneSignIn extends AppCompatActivity {
                             phoneNumber,        // Phone number to verify
                             60,                 // Timeout duration
                             TimeUnit.SECONDS,   // Unit of timeout
-                            PhoneSignIn.this,               // Activity (for callback binding)
+                            Authentication.this,               // Activity (for callback binding)
                             callbacks);        // OnVerificationStateChangedCallbacks
                 }
             }
@@ -113,7 +112,7 @@ public class PhoneSignIn extends AppCompatActivity {
 
                 if(verificationCode.isEmpty())
                 {
-                    Toast.makeText(PhoneSignIn.this, "Please enter the verification code", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(Authentication.this, "Please enter the verification code", Toast.LENGTH_SHORT).show();
                 }
                 else
                 {
@@ -140,8 +139,8 @@ public class PhoneSignIn extends AppCompatActivity {
             @Override
             public void onVerificationFailed(FirebaseException e) {
 
-                Toast.makeText(PhoneSignIn.this, "Invalid Phone Number", Toast.LENGTH_LONG).show();
-                Toast.makeText(PhoneSignIn.this, "Check Internet Connection", Toast.LENGTH_LONG).show();
+                Toast.makeText(Authentication.this, "Invalid Phone Number", Toast.LENGTH_LONG).show();
+                Toast.makeText(Authentication.this, "Check Internet Connection", Toast.LENGTH_LONG).show();
 
                 sendVerificationCode.setVisibility(View.VISIBLE);
                 inputPhoneNumber.setVisibility(View.VISIBLE);
@@ -160,7 +159,7 @@ public class PhoneSignIn extends AppCompatActivity {
                 mVerificationId = verificationId;
                 mResendToken = token;
 
-                Toast.makeText(PhoneSignIn.this, "Validation code sent successfully", Toast.LENGTH_LONG).show();
+                Toast.makeText(Authentication.this, "Validation code sent successfully", Toast.LENGTH_LONG).show();
 
                 sendVerificationCode.setVisibility(View.GONE);
                 inputPhoneNumber.setVisibility(View.GONE);
@@ -185,7 +184,7 @@ public class PhoneSignIn extends AppCompatActivity {
                         else {
 
                             String msg = task.getException().toString();
-                            Toast.makeText(PhoneSignIn.this, ""+msg, Toast.LENGTH_SHORT).show();
+                            Toast.makeText(Authentication.this, ""+msg, Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
@@ -216,80 +215,21 @@ public class PhoneSignIn extends AppCompatActivity {
                         if(task.isSuccessful())
                         {
                             loadingBar.dismiss();
-                            Toast.makeText(PhoneSignIn.this, "SignIn Successful", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(Authentication.this, "SignIn Successful", Toast.LENGTH_SHORT).show();
                             startActivity(intent);
                             finish();
                         }
                         else
                         {
-                            Toast.makeText(PhoneSignIn.this, "Sign in failed. Check your connection...", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(Authentication.this, "Sign in failed. Check your connection...", Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
-
-        /*rootRef = FirebaseDatabase.getInstance().getReference().child("users");
-        rootRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                if(dataSnapshot.exists())
-                {
-                    for(DataSnapshot d: dataSnapshot.getChildren())
-                    {
-
-                        String phone = d.child("Phone_Number").getValue().toString();
-
-                        if(phoneNumber.equals(phone))
-                        {
-                            startActivity(intent);
-                            finish();
-                        }
-                        else
-                        {
-
-                        }
-
-                    }
-
-                }
-                else
-                {
-                    String deviceToken = FirebaseInstanceId.getInstance().getToken();
-
-                    userDefaultData.child("Device_Token").setValue(deviceToken);
-                    userDefaultData.child("Phone_Number").setValue(phoneNumber);
-                    userDefaultData.child("Name").setValue("User Name");
-                    userDefaultData.child("Profile_Pic").setValue(defaultPicUrl);
-                    userDefaultData.child("Status").setValue("Hey there i am using SGCApp")
-                            .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                @Override
-                                public void onComplete(@NonNull Task<Void> task) {
-
-                                    if(task.isSuccessful())
-                                    {
-                                        startActivity(intent);
-                                        finish();
-                                    }
-                                    else
-                                    {
-                                        Toast.makeText(PhoneSignIn.this, "Sign in failed. Check your connection...", Toast.LENGTH_SHORT).show();
-                                    }
-                                }
-                            });
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });*/
-
 
     }
 
     public void goToEmailSignIn(View view)
     {
-        startActivity(new Intent(PhoneSignIn.this,SignUp.class));
+        startActivity(new Intent(Authentication.this,SignUp.class));
     }
 }

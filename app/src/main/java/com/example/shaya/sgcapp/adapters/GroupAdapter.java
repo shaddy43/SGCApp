@@ -1,4 +1,4 @@
-package com.example.shaya.sgcapp.TechnicalServices.Adapters;
+package com.example.shaya.sgcapp.adapters;
 
 import android.content.Context;
 import android.view.View;
@@ -6,8 +6,8 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-import com.example.shaya.sgcapp.Domain.ModelClasses.Groups;
 import com.example.shaya.sgcapp.R;
+import com.example.shaya.sgcapp.domain.modelClasses.Groups;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -42,7 +42,7 @@ public class GroupAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
 
-        View view = View.inflate(mContext,R.layout.group_display_layout,null);
+        View view = View.inflate(mContext, R.layout.group_display_layout,null);
 
         TextView name = view.findViewById(R.id.group_display_layout_name);
         TextView members = view.findViewById(R.id.group_display_layout_members);

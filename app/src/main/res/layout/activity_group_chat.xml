@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/whatsapp"
-    tools:context=".UI.GroupsPackage.GroupChat">
+    tools:context=".GroupChat">
 
     <include
         layout="@layout/custom_chat_bar"

@@ -13,8 +13,9 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SearchView;
 
-import com.example.shaya.sgcapp.TechnicalServices.Adapters.UserAdapter;
-import com.example.shaya.sgcapp.Domain.ModelClasses.AllUsers;
+import com.example.shaya.sgcapp.DatabaseHelper;
+import com.example.shaya.sgcapp.adapters.UserAdapter;
+import com.example.shaya.sgcapp.domain.modelClasses.Users;
 import com.example.shaya.sgcapp.R;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -27,13 +28,14 @@ import java.util.ArrayList;
 public class AddContact extends AppCompatActivity {
 
     private ListView displayList;
-    private ArrayList<AllUsers> allUserArray = new ArrayList<>();
-    private ArrayList<AllUsers> searchUserArray = new ArrayList<>();
+    private ArrayList<Users> allUserArray = new ArrayList<>();
+    private ArrayList<Users> searchUserArray = new ArrayList<>();
     private UserAdapter adapter;
     private UserAdapter searchAdapter;
     private DatabaseReference reference;
     private SearchView searchView;
     private SwipeRefreshLayout refreshLayout;
+    private DatabaseHelper helper;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,6 +44,7 @@ public class AddContact extends AppCompatActivity {
         reference =FirebaseDatabase.getInstance().getReference().child("users");
         displayList = findViewById(R.id.user_display_list);
         refreshLayout = findViewById(R.id.add_contact_swipe_refresh);
+        helper = new DatabaseHelper();
 
         refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -65,20 +68,19 @@ public class AddContact extends AppCompatActivity {
                 {
                     for(DataSnapshot d : dataSnapshot.getChildren())
                     {
-                        AllUsers data = new AllUsers();
+                        Users data = new Users();
                         data.setName(d.child("Name").getValue().toString());
                         data.setStatus(d.child("Status").getValue().toString());
                         data.setProfile_Pic(d.child("Profile_Pic").getValue().toString());
                         data.setUserId(d.getRef().getKey());
                         allUserArray.add(data);
                     }
+
                     dataDisplay();
                 }
                 else
                 {
-                    refreshLayout.setRefreshing(false);
                     allUserArray = new ArrayList<>();
-                    dataDisplay();
                 }
             }
 
@@ -91,14 +93,14 @@ public class AddContact extends AppCompatActivity {
 
     public void dataDisplay()
     {
-        adapter = new UserAdapter(allUserArray,this, false, false);
+        adapter = new UserAdapter(allUserArray, this, false, false);
         displayList.setAdapter(adapter);
         refreshLayout.setRefreshing(false);
 
         displayList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                AllUsers data = (AllUsers) parent.getItemAtPosition(position);
+                Users data = (Users) parent.getItemAtPosition(position);
 
                 Intent intent = new Intent(AddContact.this,UsersProfileActivity.class);
                 intent.putExtra("visit_user_id",data.getUserId());
@@ -124,7 +126,7 @@ public class AddContact extends AppCompatActivity {
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                         for(DataSnapshot d : dataSnapshot.getChildren())
                         {
-                            AllUsers data = new AllUsers();
+                            Users data = new Users();
                             data.setName(d.child("Name").getValue().toString());
                             data.setStatus(d.child("Status").getValue().toString());
                             data.setProfile_Pic(d.child("Profile_Pic").getValue().toString());
@@ -152,7 +154,7 @@ public class AddContact extends AppCompatActivity {
         searchView.setOnCloseListener(new SearchView.OnCloseListener() {
             @Override
             public boolean onClose() {
-                dataDisplay();
+                onStart();
                 return false;
             }
         });
@@ -162,13 +164,13 @@ public class AddContact extends AppCompatActivity {
 
     public void searchDataDisplay()
     {
-            searchAdapter = new UserAdapter(searchUserArray,this, false, false);
-            displayList.setAdapter(searchAdapter);
+        searchAdapter = new UserAdapter(searchUserArray,this, false, false);
+        displayList.setAdapter(searchAdapter);
 
         displayList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                AllUsers data = (AllUsers) parent.getItemAtPosition(position);
+                Users data = (Users) parent.getItemAtPosition(position);
 
                 Intent intent = new Intent(AddContact.this,UsersProfileActivity.class);
                 intent.putExtra("visit_user_id",data.getUserId());

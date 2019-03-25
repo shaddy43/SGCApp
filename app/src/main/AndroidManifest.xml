@@ -14,7 +14,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".TechnicalServices.Authentication.PhoneSignIn">
+        <activity android:name=".Authentication">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -29,15 +29,15 @@
             android:name=".UI.AddContact"
             android:parentActivityName=".UI.Main2Activity" />
         <activity android:name=".UI.UsersProfileActivity" />
-        <activity android:name=".UI.GroupsPackage.GroupChat" />
-        <activity android:name=".TechnicalServices.Authentication.SignUp" />
-        <activity android:name=".UI.ChatActivity" />
+        <activity android:name=".GroupChat" />
+        <activity android:name=".SignUp" />
+        <activity android:name=".Chat" />
         <activity android:name=".UI.Settings" />
-        <activity android:name=".UI.GroupsPackage.GroupMemberSelection" />
-        <activity android:name=".UI.GroupsPackage.GroupSettings" />
-        <activity android:name=".UI.GroupsPackage.DeleteGroupMembers" />
-        <activity android:name=".UI.GroupsPackage.AddGroupMembers" />
-        <activity android:name=".UI.GroupsPackage.GroupSettingsAdvance" />
+        <activity android:name=".UI.GroupMemberSelection" />
+        <activity android:name=".UI.GroupSettings" />
+        <activity android:name=".UI.DeleteGroupMembers" />
+        <activity android:name=".UI.AddGroupMembers" />
+        <activity android:name=".UI.GroupSettingsAdvance" />
         <activity android:name=".Safasf1"></activity>
     </application>
 

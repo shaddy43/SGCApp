@@ -1,23 +1,13 @@
-package com.example.shaya.sgcapp.UI.GroupsPackage;
+package com.example.shaya.sgcapp;
 
-import android.Manifest;
 import android.app.ProgressDialog;
-import android.content.ContentResolver;
-import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.media.MediaScannerConnection;
 import android.net.Uri;
-import android.os.Build;
-import android.os.Environment;
-import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.annotation.RequiresApi;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.content.CursorLoader;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -31,10 +21,9 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.shaya.sgcapp.TechnicalServices.Security.AES;
-import com.example.shaya.sgcapp.TechnicalServices.Adapters.MessageAdapter;
-import com.example.shaya.sgcapp.Domain.ModelClasses.Messages;
-import com.example.shaya.sgcapp.R;
+import com.example.shaya.sgcapp.adapters.MessageAdapter;
+import com.example.shaya.sgcapp.domain.modelClasses.Messages;
+import com.example.shaya.sgcapp.UI.GroupSettings;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -51,10 +40,6 @@ import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.net.URI;
-import java.net.URL;
-import java.security.spec.ECField;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -87,7 +72,7 @@ public class GroupChat extends AppCompatActivity {
 
     private ProgressDialog loadingBar;
 
-    private AES aes;
+    private Security security;
     private String key;
     private String keyVal;
 
@@ -312,11 +297,11 @@ public class GroupChat extends AppCompatActivity {
 
         String sendingMsg = inputMessage.getText().toString();
         inputMessage.setText("");
-        aes = new AES();
+        security = new Security();
         String encryptedVal = "";
         try
         {
-            encryptedVal = aes.encrypt(sendingMsg, keyVal);
+            encryptedVal = security.encrypt(sendingMsg, keyVal);
 
         }catch (Exception e)
         {
@@ -356,7 +341,7 @@ public class GroupChat extends AppCompatActivity {
 
     private void groupInfo() {
 
-        Intent intent = new Intent(this,GroupSettings.class);
+        Intent intent = new Intent(this, GroupSettings.class);
         intent.putExtra("groupId",groupId);
         startActivity(intent);
         finish();
@@ -389,10 +374,10 @@ public class GroupChat extends AppCompatActivity {
 
             Uri encUri;
 
-            aes = new AES();
+            security = new Security();
             final Uri imageUri = data.getData();
             File file = new File(getRealPathFromURI(imageUri));
-            File encFile = new File(aes.encryptImage(file,keyVal));
+            File encFile = new File(security.encryptFile(file,keyVal));
             encUri = Uri.fromFile(encFile);
 
             //Toast.makeText(this, ""+ imageUri.toString(), Toast.LENGTH_LONG).show();
@@ -461,11 +446,11 @@ public class GroupChat extends AppCompatActivity {
 
             Uri encUri;
 
-            aes = new AES();
+            security = new Security();
             final Uri audioUri = data.getData();
             String path = getAudioPath(audioUri);
             File file = new File(path);
-            File encFile = new File(aes.encryptImage(file,keyVal));
+            File encFile = new File(security.encryptFile(file,keyVal));
             encUri = Uri.fromFile(encFile);
 
             //Toast.makeText(this, ""+encUri.toString(), Toast.LENGTH_SHORT).show();
@@ -526,7 +511,7 @@ public class GroupChat extends AppCompatActivity {
         }
     }
 
-    public String getRealPathFromURI(Uri contentUri)
+    private String getRealPathFromURI(Uri contentUri)
     {
         String[] proj = { MediaStore.Audio.Media.DATA };
         Cursor cursor = managedQuery(contentUri, proj, null, null, null);

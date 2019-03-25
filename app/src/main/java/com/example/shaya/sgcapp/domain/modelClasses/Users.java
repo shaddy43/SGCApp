@@ -1,6 +1,6 @@
-package com.example.shaya.sgcapp.Domain.ModelClasses;
+package com.example.shaya.sgcapp.domain.modelClasses;
 
-public class AllUsers {
+public class Users {
 
      private String userId;
 
@@ -11,10 +11,10 @@ public class AllUsers {
 
      private String onlineState;
 
-    public AllUsers() {
+    public Users() {
     }
 
-    public AllUsers(String name, String profile_Pic, String status) {
+    public Users(String name, String profile_Pic, String status) {
         Name = name;
         Profile_Pic = profile_Pic;
         Status = status;

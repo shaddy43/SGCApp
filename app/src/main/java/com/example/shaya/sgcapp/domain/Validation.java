@@ -1,4 +1,4 @@
-package com.example.shaya.sgcapp.Domain;
+package com.example.shaya.sgcapp.domain;
 
 public class Validation {
 

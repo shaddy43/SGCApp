@@ -14,8 +14,9 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.shaya.sgcapp.DatabaseHelper;
 import com.example.shaya.sgcapp.R;
-import com.example.shaya.sgcapp.Domain.Validation;
+import com.example.shaya.sgcapp.domain.Validation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -48,6 +49,7 @@ public class SetProfile extends AppCompatActivity {
     private ProgressDialog loadingBar;
 
     private Validation validation;
+    private DatabaseHelper helper;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -72,6 +74,8 @@ public class SetProfile extends AppCompatActivity {
 
         loadingBar = new ProgressDialog(this);
         validation = new Validation();
+
+        helper = new DatabaseHelper();
 
         userData.addValueEventListener(new ValueEventListener() {
             @Override
@@ -111,8 +115,10 @@ public class SetProfile extends AppCompatActivity {
             status.setEnabled(false);
             imageView.setEnabled(false);
 
-            userData.child("Name").setValue(name.getText().toString());
-            userData.child("Status").setValue(status.getText().toString());
+            String userName = name.getText().toString();
+            String userStatus = status.getText().toString();
+            helper.updateProfile(userName,userStatus);
+
             submit.setVisibility(View.GONE);
             editProfile.setVisibility(View.VISIBLE);
         }
@@ -125,11 +131,6 @@ public class SetProfile extends AppCompatActivity {
 
     public void changeImage(View view)
     {
-        /*Intent intent = new Intent();
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        intent.setType("Profile_Pic/*");
-        startActivityForResult(intent,1);*/
-
         Intent gallery = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI);
         startActivityForResult(gallery, 100);
     }
@@ -145,37 +146,40 @@ public class SetProfile extends AppCompatActivity {
             loadingBar.show();
 
             final Uri imageUri = data.getData();
+            /*helper.updateProfileImage(imageUri);
+            Toast.makeText(this, "Profile updated", Toast.LENGTH_SHORT).show();
+            loadingBar.dismiss();*/
+
             final StorageReference filePath = userDataStorage.child(mAuth.getCurrentUser().getUid() + ".jpg");
+
             filePath.putFile(imageUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                 @Override
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                     filePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                         @Override
                         public void onSuccess(Uri uri) {
-                           String downloadUrl = uri.toString();
+                            final String downloadUrl = uri.toString();
                             userData.child("Profile_Pic").setValue(downloadUrl).addOnCompleteListener(new OnCompleteListener<Void>() {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
 
                                     if(task.isSuccessful())
                                     {
-                                        Toast.makeText(SetProfile.this, "Profile pic updated", Toast.LENGTH_LONG).show();
+                                        Toast.makeText(SetProfile.this, "profile pic updated", Toast.LENGTH_SHORT).show();
+                                        loadingBar.dismiss();
+                                        Picasso.get().load(downloadUrl).into(imageView);
                                     }
                                     else
                                     {
-                                        Toast.makeText(SetProfile.this, "Not updated", Toast.LENGTH_LONG).show();
+                                        loadingBar.dismiss();
+                                        Toast.makeText(SetProfile.this, "Not successful. Please check internet", Toast.LENGTH_SHORT).show();
                                     }
-                                    loadingBar.dismiss();
                                 }
                             });
                         }
                     });
-
-
-
                 }
             });
-
         }
     }
 }

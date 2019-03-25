@@ -1,4 +1,4 @@
-package com.example.shaya.sgcapp.UI.Fragments;
+package com.example.shaya.sgcapp.UI;
 
 
 import android.content.Intent;
@@ -12,10 +12,10 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
-import com.example.shaya.sgcapp.Domain.ModelClasses.AllUsers;
-import com.example.shaya.sgcapp.UI.ChatActivity;
+import com.example.shaya.sgcapp.Chat;
+import com.example.shaya.sgcapp.domain.modelClasses.Users;
 import com.example.shaya.sgcapp.R;
-import com.example.shaya.sgcapp.TechnicalServices.Adapters.UserAdapter;
+import com.example.shaya.sgcapp.adapters.UserAdapter;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -33,12 +33,14 @@ public class ChatFragment extends Fragment {
 
     private View view;
     private ListView chatUsersListView;
-    private ArrayList<AllUsers> chatUsersList;
+    private ArrayList<Users> chatUsersList;
     private UserAdapter adapter;
     private DatabaseReference userRef, contactsRef;
     private FirebaseAuth mAuth;
     private String currentUserId;
     private SwipeRefreshLayout refreshLayout;
+
+    //private DatabaseHelper helper;
 
     public ChatFragment() {
         // Required empty public constructor
@@ -66,9 +68,10 @@ public class ChatFragment extends Fragment {
             }
         });
 
+        //helper = new DatabaseHelper();
+
         return view;
     }
-
 
     @Override
     public void onStart() {
@@ -91,7 +94,7 @@ public class ChatFragment extends Fragment {
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
                                 String date, time, state;
-                                AllUsers data = new AllUsers();
+                                Users data = new Users();
 
                                 if(dataSnapshot.hasChild("user-state"))
                                 {
@@ -158,9 +161,9 @@ public class ChatFragment extends Fragment {
         chatUsersListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                AllUsers data = (AllUsers) parent.getItemAtPosition(position);
+                Users data = (Users) parent.getItemAtPosition(position);
 
-                Intent intent = new Intent(getContext(), ChatActivity.class);
+                Intent intent = new Intent(getContext(), Chat.class);
                 intent.putExtra("visit_user_id", data.getUserId());
                 intent.putExtra("visit_user_state", data.getStatus());
                 intent.putExtra("visit_user_name", data.getName());

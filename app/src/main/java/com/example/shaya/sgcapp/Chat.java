@@ -1,4 +1,4 @@
-package com.example.shaya.sgcapp.UI;
+package com.example.shaya.sgcapp;
 
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -19,11 +19,8 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.shaya.sgcapp.TechnicalServices.Adapters.MessageAdapter;
-import com.example.shaya.sgcapp.Domain.ModelClasses.Messages;
-import com.example.shaya.sgcapp.R;
-import com.example.shaya.sgcapp.TechnicalServices.Adapters.PrivateMessageAdapter;
-import com.example.shaya.sgcapp.TechnicalServices.Security.AES;
+import com.example.shaya.sgcapp.adapters.PrivateMessageAdapter;
+import com.example.shaya.sgcapp.domain.modelClasses.Messages;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -46,7 +43,7 @@ import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
-public class ChatActivity extends AppCompatActivity {
+public class Chat extends AppCompatActivity {
 
     private String messageReceiverName;
     private String messageReceiverId;
@@ -72,7 +69,7 @@ public class ChatActivity extends AppCompatActivity {
 
     private ProgressDialog loadingBar;
 
-    //private AES aes;
+    //private Security aes;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -176,11 +173,11 @@ public class ChatActivity extends AppCompatActivity {
                 });
     }
 
-    public void sendMessage()
+    private void sendMessage()
     {
         String messageText = msgInput.getText().toString();
         msgInput.setText("");
-        /*aes = new AES();
+        /*aes = new Security();
         String encryptedVal = "";
         try
         {
@@ -217,7 +214,7 @@ public class ChatActivity extends AppCompatActivity {
 
                     if(!task.isSuccessful())
                     {
-                        Toast.makeText(ChatActivity.this, "Error", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(Chat.this, "Error", Toast.LENGTH_SHORT).show();
                     }
                 }
             });
@@ -327,7 +324,7 @@ public class ChatActivity extends AppCompatActivity {
 
                                         if(!task.isSuccessful())
                                         {
-                                            Toast.makeText(ChatActivity.this, "Error sending image", Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(Chat.this, "Error sending image", Toast.LENGTH_SHORT).show();
                                         }
                                         msgInput.setText("");
                                         loadingBar.dismiss();
@@ -341,7 +338,7 @@ public class ChatActivity extends AppCompatActivity {
                     }
                     else
                     {
-                        Toast.makeText(ChatActivity.this, "Picture not sent. Please try again", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(Chat.this, "Picture not sent. Please try again", Toast.LENGTH_SHORT).show();
                         loadingBar.dismiss();
                     }
 

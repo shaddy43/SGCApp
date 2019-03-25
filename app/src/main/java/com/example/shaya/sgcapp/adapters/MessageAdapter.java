@@ -1,4 +1,4 @@
-package com.example.shaya.sgcapp.TechnicalServices.Adapters;
+package com.example.shaya.sgcapp.adapters;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -18,10 +18,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.shaya.sgcapp.Domain.ModelClasses.Messages;
 import com.example.shaya.sgcapp.R;
-import com.example.shaya.sgcapp.TechnicalServices.Security.AES;
-import com.example.shaya.sgcapp.UI.GroupsPackage.GroupChat;
+import com.example.shaya.sgcapp.Security;
+import com.example.shaya.sgcapp.domain.modelClasses.Messages;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -133,9 +132,9 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                     if(fromMessageType.equals("text"))
                     {
                         decryptMsg[0] = "";
-                        AES aes = new AES();
+                        Security security = new Security();
                         try {
-                            decryptMsg[0] = aes.decrypt(messages.getMessage(), singleMsgKey);
+                            decryptMsg[0] = security.decrypt(messages.getMessage(), singleMsgKey);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -143,7 +142,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                     else if(fromMessageType.equals("image"))
                     {
                         decryptMsg[0] = "";
-                        AES aes = new AES();
+                        Security security = new Security();
                         try {
 
                             rootPath = Environment.getExternalStorageDirectory()
@@ -160,7 +159,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
                             if(downloadedFile.exists())
                             {
-                                decryptMsg[0] = aes.decryptImage(new File(rootPath.concat(messages.getMsgKey())), singleMsgKey);
+                                decryptMsg[0] = security.decryptFile(new File(rootPath.concat(messages.getMsgKey())), singleMsgKey);
                             }
 
                             //File dltFile = new File(rootPath+messages.getMsgKey()+".crypt");
@@ -173,7 +172,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                     else if(fromMessageType.equals("audio"))
                     {
                         decryptMsg[0] = "";
-                        AES aes = new AES();
+                        Security security = new Security();
                         try {
 
                             rootPath = Environment.getExternalStorageDirectory()
@@ -190,7 +189,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
                             if(downloadedFile.exists())
                             {
-                                decryptMsg[0] = aes.decryptImage(new File(rootPath.concat(messages.getMsgKey())), singleMsgKey);
+                                decryptMsg[0] = security.decryptFile(new File(rootPath.concat(messages.getMsgKey())), singleMsgKey);
                             }
 
                             //File dltFile = new File(rootPath+messages.getMsgKey()+".crypt");

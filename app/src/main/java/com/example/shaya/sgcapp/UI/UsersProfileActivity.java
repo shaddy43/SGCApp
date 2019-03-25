@@ -7,7 +7,9 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.example.shaya.sgcapp.DatabaseHelper;
 import com.example.shaya.sgcapp.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -19,6 +21,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -37,6 +40,7 @@ public class UsersProfileActivity extends AppCompatActivity {
 
     DatabaseReference ref, chatRequestRef, contactsRef, notificatonsRef;
     FirebaseAuth mAuth;
+    DatabaseHelper helper;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,8 +64,18 @@ public class UsersProfileActivity extends AppCompatActivity {
         contactsRef = FirebaseDatabase.getInstance().getReference().child("contacts");
         notificatonsRef = FirebaseDatabase.getInstance().getReference().child("notifications");
 
-        retrieveUserInfo();
+        helper = new DatabaseHelper();
 
+        //retrieveUserInfo();
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        current_state = "new";
+        retrieveUserInfo();
     }
 
     public void retrieveUserInfo()
@@ -95,51 +109,51 @@ public class UsersProfileActivity extends AppCompatActivity {
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
 
-                          if(dataSnapshot.hasChild(receiverUserId))
-                          {
-                                String req_type = dataSnapshot.child(receiverUserId).child("req_type").getValue().toString();
+                        if(dataSnapshot.hasChild(receiverUserId))
+                        {
+                            String req_type = dataSnapshot.child(receiverUserId).child("req_type").getValue().toString();
 
-                                if(req_type.equals("sent"))
-                                {
-                                    current_state = "request_sent";
-                                    sendMsg.setText("Cancel Request");
-                                }
-                                else if(req_type.equals("received"))
-                                {
-                                    current_state = "request_received";
-                                    sendMsg.setText("Accept Request");
+                            if(req_type.equals("sent"))
+                            {
+                                current_state = "request_sent";
+                                sendMsg.setText("Cancel Request");
+                            }
+                            else if(req_type.equals("received"))
+                            {
+                                current_state = "request_received";
+                                sendMsg.setText("Accept Request");
 
-                                    declineMsg.setVisibility(View.VISIBLE);
-                                    declineMsg.setEnabled(true);
+                                declineMsg.setVisibility(View.VISIBLE);
+                                declineMsg.setEnabled(true);
 
-                                    declineMsg.setOnClickListener(new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View v) {
-                                            cancelChatRequest();
-                                        }
-                                    });
-                                }
-                           }
-                           else
-                           {
-                                contactsRef.child(currentUserId).addListenerForSingleValueEvent(new ValueEventListener() {
+                                declineMsg.setOnClickListener(new View.OnClickListener() {
                                     @Override
-                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                                        if(dataSnapshot.hasChild(receiverUserId))
-                                        {
-                                            current_state = "friends";
-                                            sendMsg.setText("Remove Contact");
-                                        }
-
-                                    }
-
-                                    @Override
-                                    public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                                    public void onClick(View v) {
+                                        cancelChatRequest();
                                     }
                                 });
-                           }
+                            }
+                        }
+                        else
+                        {
+                            contactsRef.child(currentUserId).addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                                    if(dataSnapshot.hasChild(receiverUserId))
+                                    {
+                                        current_state = "friends";
+                                        sendMsg.setText("Remove Contact");
+                                    }
+
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                }
+                            });
+                        }
                     }
 
                     @Override
@@ -182,7 +196,7 @@ public class UsersProfileActivity extends AppCompatActivity {
 
     private void removeContact() {
 
-        contactsRef.child(currentUserId).child(receiverUserId)
+        /*contactsRef.child(currentUserId).child(receiverUserId)
                 .removeValue()
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
@@ -211,7 +225,15 @@ public class UsersProfileActivity extends AppCompatActivity {
                         }
 
                     }
-                });
+                });*/
+
+        helper.removeContact(currentUserId,receiverUserId);
+        sendMsg.setEnabled(true);
+        current_state = "new";
+        sendMsg.setText("Send Request");
+
+        declineMsg.setVisibility(View.INVISIBLE);
+        declineMsg.setEnabled(false);
 
     }
 
@@ -262,11 +284,16 @@ public class UsersProfileActivity extends AppCompatActivity {
                     }
                 });
 
+        /*helper.acceptChatRequest(currentUserId,receiverUserId);
+        sendMsg.setEnabled(true);
+        current_state = "friends";
+        sendMsg.setText("Remove Contact");
+        declineMsg.setVisibility(View.INVISIBLE);*/
     }
 
     private void cancelChatRequest() {
 
-        chatRequestRef.child(currentUserId).child(receiverUserId)
+        /*chatRequestRef.child(currentUserId).child(receiverUserId)
                 .removeValue()
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
@@ -295,7 +322,15 @@ public class UsersProfileActivity extends AppCompatActivity {
                         }
 
                     }
-                });
+                });*/
+
+        helper.cancelChatRequest(currentUserId,receiverUserId);
+        sendMsg.setEnabled(true);
+        current_state = "new";
+        sendMsg.setText("Send Request");
+
+        declineMsg.setVisibility(View.INVISIBLE);
+        declineMsg.setEnabled(false);
 
     }
 
@@ -316,23 +351,6 @@ public class UsersProfileActivity extends AppCompatActivity {
                                             if(task.isSuccessful())
                                             {
 
-                                                /*HashMap<String, String> reqNotificationsMap = new HashMap<>();
-                                                reqNotificationsMap.put("from", currentUserId);
-                                                reqNotificationsMap.put("type", "request");
-
-                                                notificatonsRef.child(receiverUserId).push()
-                                                        .setValue(reqNotificationsMap)
-                                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                            @Override
-                                                            public void onComplete(@NonNull Task<Void> task) {
-
-                                                                if(task.isSuccessful())
-                                                                {
-
-                                                                }
-                                                            }
-                                                        });*/
-
                                                 sendMsg.setEnabled(true);
                                                 current_state = "request_sent";
                                                 sendMsg.setText("Cancel request");
@@ -344,5 +362,10 @@ public class UsersProfileActivity extends AppCompatActivity {
 
                     }
                 });
+
+        /*helper.sendChatRequest(currentUserId,receiverUserId);
+        sendMsg.setEnabled(true);
+        current_state = "request_sent";
+        sendMsg.setText("Cancel request");*/
     }
 }

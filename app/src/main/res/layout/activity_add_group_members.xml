@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".UI.GroupsPackage.AddGroupMembers">
+    tools:context=".UI.AddGroupMembers">
 
     <ListView
         android:id="@+id/add_group_members_listView"
