@@ -43,7 +43,7 @@ public class Main2Activity extends AppCompatActivity {
     private GroupsConfig config;
 
     private SharedPreferencesConfig sp;
-    private LocalDatabaseHelper dp;
+    //private LocalDatabaseHelper db;
     //private String defaultGroupPicUrl = "https://firebasestorage.googleapis.com/v0/b/sgcapp-8dcbb.appspot.com/o/group_messages_images%2FGroup-icon.png?alt=media&token=3ef7955e-783f-4a71-9224-bba311438fc3";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,7 +64,9 @@ public class Main2Activity extends AppCompatActivity {
 
         validation = new Validation();
         config = new GroupsConfig();
-        dp = new LocalDatabaseHelper(this);
+        //db = new LocalDatabaseHelper(this);
+        //db.insertData("123","v1","HelloWorld");
+        //db.deleteData("123");
     }
 
     @Override

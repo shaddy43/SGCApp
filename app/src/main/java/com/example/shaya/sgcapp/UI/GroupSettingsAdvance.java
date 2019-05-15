@@ -66,7 +66,7 @@ public class GroupSettingsAdvance extends AppCompatActivity {
             StringBuffer buffer = new StringBuffer();
             while(res.moveToNext())
             {
-                buffer.append("Key Value : "+res.getString(2)+"\n");
+                buffer.append("Key Value : "+res.getString(3)+"\n");
             }
 
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -97,7 +97,7 @@ public class GroupSettingsAdvance extends AppCompatActivity {
                         public void onClick(View v) {
 
                             AlertDialog.Builder builder = new AlertDialog.Builder(GroupSettingsAdvance.this, R.style.AlertDialog);
-                            builder.setTitle("Warning, All previous messages will be deleted");
+                            builder.setTitle("Are you sure you want to change group key?");
 
                             builder.setPositiveButton("Change Key", new DialogInterface.OnClickListener() {
                                 @Override
@@ -150,21 +150,32 @@ public class GroupSettingsAdvance extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                final String keyVersion = dataSnapshot.getValue().toString();
-
-                /*Cursor res = db.getData(groupId,keyVersion);
-                if(res.getCount() != 0)
+                if(dataSnapshot.exists())
                 {
-                    StringBuffer buffer = new StringBuffer();
-                    while(res.moveToNext())
-                    {
-                        buffer.append("Key Value : "+res.getString(2)+"\n");
-                        //GK = res.getString(2);
+                    final String keyVersion = dataSnapshot.getValue().toString();
 
+                    Cursor res = db.getData(groupId,keyVersion);
+                    if(res.getCount() == 0)
+                    {
+                        Toast.makeText(GroupSettingsAdvance.this, "No Data Found", Toast.LENGTH_SHORT).show();
                     }
-                    GKview.setText(buffer.toString());
+                    else {
+                        //StringBuffer buffer = new StringBuffer();
+                        while (res.moveToNext()) {
+                            //buffer.append("Key Value : " + res.getString(3) + "\n");
+                            String grp = res.getString(1);
+                            if(grp.equals(groupId))
+                            {
+                                String ver = res.getString(2);
+                                if(ver.equals(keyVersion))
+                                {
+                                    GK = res.getString(3);
+                                }
+                            }
+                        }
+                        GKview.setText(GK);
+                    }
                 }
-*/
                 /*rootRef.child("groups").child(groupId).child("Security").child("keyVersions").child(keyVersion).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {

@@ -1,8 +1,12 @@
 package com.example.shaya.sgcapp;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.widget.Toast;
+
+import com.example.shaya.sgcapp.UI.GroupSettingsAdvance;
 import com.example.shaya.sgcapp.domain.Validation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -33,6 +37,8 @@ public class GroupsConfig {
     private String GK = "";
     private StorageReference storageRef;
     private LocalDatabaseHelper db;
+    private Security enc;
+    private ArrayList<String> members;
 
     public GroupsConfig() {
     }
@@ -68,6 +74,7 @@ public class GroupsConfig {
                                         ref.child("groups").child(finalGroupKey).child("Total_Members").setValue(1);
                                         ref.child("groups").child(finalGroupKey).child("Security").child("Algo").setValue("AES");
                                         ref.child("groups").child(finalGroupKey).child("Security").child("key").setValue("");
+                                        ref.child("groups").child(finalGroupKey).child("Security").child("distribution").setValue("unicast");
                                         ref.child("groups").child(finalGroupKey).child("Group_Pic").setValue(defaultGroupPicUrl);
 
                                     }
@@ -79,55 +86,183 @@ public class GroupsConfig {
         return groupKey;
     }
 
-    public void addGroupMembers(ArrayList<String> members, String groupKey)
+    public void addGroupMembers(final ArrayList<String> members, final String groupId, String status, final Context context)
     {
-        groupRef = FirebaseDatabase.getInstance().getReference().child("group-users");
+        if(status.equals("new"))
+        {
+            groupRef = FirebaseDatabase.getInstance().getReference().child("group-users");
+            ref = FirebaseDatabase.getInstance().getReference();
+
+            for(int i=0;i<members.size();i++)
+            {
+                groupRef.child(groupId).child(members.get(i)).child("groupStatus").setValue("member");
+                groupRef.child(groupId).child(members.get(i)).child("memberStatus").setValue("new");
+                groupRef.child(groupId).child(members.get(i)).child("keyChange").setValue("unsuccessful");
+                ref.child("users").child(members.get(i)).child("user-groups").child(groupId).setValue("true");
+            }
+            ref.child("groups").child(groupId).child("Total_Members").setValue(members.size()+1);
+        }
+        else
+        {
+            groupRef = FirebaseDatabase.getInstance().getReference().child("group-users");
+            ref = FirebaseDatabase.getInstance().getReference();
+            enc = new Security();
+            db = new LocalDatabaseHelper(context);
+
+            addGroupMembers(members,groupId,"new",context);
+
+            ref.child("group-users").child(groupId).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if(dataSnapshot.exists())
+                    {
+                        for(DataSnapshot d: dataSnapshot.getChildren())
+                        {
+                            final String member = d.getKey();
+                            for(int i=0;i<members.size();i++)
+                            {
+                                if(!member.equals(members.get(i)))
+                                {
+                                    ref.child("group-users").child(groupId).child(member).child("groupStatus").addListenerForSingleValueEvent(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                            if(dataSnapshot.exists())
+                                            {
+                                                String status = dataSnapshot.getValue().toString();
+
+                                                if(!status.equals("admin"))
+                                                {
+                                                    ref.child("group-users").child(groupId).child(member).child("memberStatus").setValue("old");
+                                                    ref.child("group-users").child(groupId).child(member).child("keyChange").setValue("unsuccessful");
+                                                }
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                        }
+                                    });
+                                }
+                                else
+                                {
+                                    ref.child("group-users").child(groupId).child(member).child("memberStatus").setValue("new");
+                                    ref.child("group-users").child(groupId).child(member).child("keyChange").setValue("unsuccessful");
+                                }
+                            }
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
+
+            /*for(int i=0;i<members.size();i++)
+            {
+                groupRef.child(groupId).child(members.get(i)).child("groupStatus").setValue("member");
+                groupRef.child(groupId).child(members.get(i)).child("memberStatus").setValue("new");
+                ref.child("group-users").child(groupId).child(members.get(i)).child("keyChange").setValue("unsuccessful");
+
+                ref.child("users").child(members.get(i)).child("user-groups").child(groupId).setValue("true");
+            }*/
+
+/*            ref.child("groups").child(groupId).child("Total_Members").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if(dataSnapshot.exists())
+                    {
+                        int mem = Integer.parseInt(dataSnapshot.getValue().toString());
+
+                        ref.child("groups").child(groupId).child("Total_Members").setValue(mem+members.size());
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });*/
+
+            ref.child("groups").child(groupId).child("Security").child("key").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                    if(dataSnapshot.exists())
+                    {
+                        String keyVersion = dataSnapshot.getValue().toString();
+                        String key = "";
+
+                        Cursor res = db.getData(groupId,keyVersion);
+                        if(res.getCount() != 0)
+                        {
+                            //StringBuffer buffer = new StringBuffer();
+                            while (res.moveToNext()) {
+                                //buffer.append("Key Value : " + res.getString(3) + "\n");
+                                String grp = res.getString(1);
+                                if(grp.equals(groupId))
+                                {
+                                    String ver = res.getString(2);
+                                    if(ver.equals(keyVersion))
+                                    {
+                                        key = res.getString(3);
+                                    }
+                                }
+                            }
+                        }
+
+                        if(!key.equals(""))
+                        {
+                            try {
+
+                                final String newKey = generateNewKey(key);
+                                updateGroup(groupId,newKey,context);
+
+                                ref.child("groups").child(groupId).child("Security").child("distribution").setValue("broadcast");
+                                String encKey = enc.encrypt(newKey,key);
+                                ref.child("groups").child(groupId).child("Security").child("encKey").setValue(encKey);
+
+                                for(int i=0;i<members.size();i++)
+                                {
+                                    String userEncKey = enc.encrypt(newKey,members.get(i));
+                                    ref.child("group-users").child(groupId).child(members.get(i)).child("encKey").setValue(userEncKey);
+                                }
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
+        }
+    }
+
+    public void setKey(String gK, String groupKey, Context context, ArrayList<String> members) throws Exception {
+        db = new LocalDatabaseHelper(context);
         ref = FirebaseDatabase.getInstance().getReference();
+        enc = new Security();
+
+        ref.child("groups").child(groupKey).child("Security").child("keyVersions").child("0").setValue(gK);
+        ref.child("groups").child(groupKey).child("Security").child("key").setValue("0");
+        db.insertData(groupKey,"0",gK);
 
         for(int i=0;i<members.size();i++)
         {
-            groupRef.child(groupKey).child(members.get(i)).child("groupStatus").setValue("member");
-            ref.child("users").child(members.get(i)).child("user-groups").child(groupKey).setValue("true");
-
-            String hashValue = "";
-            try {
-                hashValue = generateRandom();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            ref.child("groups").child(groupKey).child("Security").child("GKgeneration").child(members.get(i)).setValue(hashValue);
+            String encKey = enc.encrypt(gK,members.get(i));
+            ref.child("group-users").child(groupKey).child(members.get(i)).child("encKey").setValue(encKey);
         }
-        ref.child("groups").child(groupKey).child("Total_Members").setValue(members.size()+1);
     }
 
-    public void setKey(String gK, String groupKey, Context context)
-    {
-        db = new LocalDatabaseHelper(context);
-        ref = FirebaseDatabase.getInstance().getReference();
-
-        ref.child("groups").child(groupKey).child("Security").child("keyVersions").child("v").setValue(gK);
-        ref.child("groups").child(groupKey).child("Security").child("key").setValue("v");
-        db.insertData(groupKey,"v",gK);
-    }
-
-    private String generateRandom() throws Exception {
-
-        Random rand = new Random();
-        String randomDigit = String.valueOf(rand.nextInt(100));
-
-        MessageDigest m = MessageDigest.getInstance("MD5");
-        m.reset();
-        m.update(randomDigit.getBytes());
-        byte[] digest = m.digest();
-        BigInteger bigInt = new BigInteger(1, digest);
-        String hashText = bigInt.toString(8);
-
-        String endResult = String.valueOf(hashText.charAt(0)).concat(String.valueOf(hashText.charAt(1))).concat(String.valueOf(hashText.charAt(2)));
-        return endResult;
-    }
-
-    public void updateGroup(final String groupId, Context context)
+    public void updateGroup(final String groupId, final String groupKey, Context context)
     {
         db = new LocalDatabaseHelper(context);
         ref = FirebaseDatabase.getInstance().getReference();
@@ -138,7 +273,6 @@ public class GroupsConfig {
                 long c = dataSnapshot.getChildrenCount();
                 ref.child("groups").child(groupId).child("Total_Members").setValue(c);
 
-                generateGroupKey(groupId);
 
                 ref.child("groups").child(groupId).child("Security").child("keyVersions").addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -147,9 +281,9 @@ public class GroupsConfig {
                         if(dataSnapshot.exists())
                         {
                             int count = (int) dataSnapshot.getChildrenCount();
-                            ref.child("groups").child(groupId).child("Security").child("keyVersions").child("v"+count).setValue(GK);
-                            ref.child("groups").child(groupId).child("Security").child("key").setValue("v"+count);
-                            db.insertData(groupId,"v"+count,GK);
+                            ref.child("groups").child(groupId).child("Security").child("keyVersions").child(String.valueOf(count)).setValue(groupKey);
+                            ref.child("groups").child(groupId).child("Security").child("key").setValue(String.valueOf(count));
+                            db.insertData(groupId,String.valueOf(count),groupKey);
                         }
                     }
 
@@ -167,34 +301,111 @@ public class GroupsConfig {
         });
     }
 
-    private void generateGroupKey(String groupId)
+    public void deleteGroupMembers(final ArrayList<String> deleteMembers, final String groupId, final Context context)
     {
+        enc = new Security();
         ref = FirebaseDatabase.getInstance().getReference();
+        members = new ArrayList<>();
+        db = new LocalDatabaseHelper(context);
 
-        ref.child("groups").child(groupId).child("Security").child("GKgeneration").addValueEventListener(new ValueEventListener() {
+        for (int i=0;i<deleteMembers.size();i++)
+        {
+            ref.child("group-users").child(groupId).child(deleteMembers.get(i)).removeValue();
+            ref.child("users").child(deleteMembers.get(i)).child("user-groups").child(groupId).removeValue();
+        }
+
+        ref.child("groups").child(groupId).child("Security").child("key").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
                 if(dataSnapshot.exists())
                 {
-                    String groupKey = "";
-                    for(DataSnapshot d : dataSnapshot.getChildren())
+                    String keyVersion = dataSnapshot.getValue().toString();
+
+                    String key = "";
+
+                    Cursor res = db.getData(groupId,keyVersion);
+                    if(res.getCount() != 0)
                     {
-                        groupKey = groupKey.concat(d.getValue().toString());
+                        //StringBuffer buffer = new StringBuffer();
+                        while (res.moveToNext()) {
+                            //buffer.append("Key Value : " + res.getString(3) + "\n");
+                            String grp = res.getString(1);
+                            if(grp.equals(groupId))
+                            {
+                                String ver = res.getString(2);
+                                if(ver.equals(keyVersion))
+                                {
+                                    key = res.getString(3);
+                                }
+                            }
+                        }
                     }
 
-                    try {
+                    if(!key.equals(""))
+                    {
+                        try
+                        {
+                            final String newKey = generateNewKey(key);
+                            updateGroup(groupId,newKey,context);
 
-                        MessageDigest m = MessageDigest.getInstance("SHA-256");
-                        m.reset();
-                        m.update(groupKey.getBytes());
-                        byte[] digest = m.digest();
-                        BigInteger bigInt = new BigInteger(1, digest);
-                        String hashText = bigInt.toString(16);
-                        GK = hashText;
+                            ref.child("groups").child(groupId).child("Security").child("distribution").setValue("unicast");
+                            ref.child("group-users").child(groupId).addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                                    if(dataSnapshot.exists())
+                                    {
+                                        for(DataSnapshot d : dataSnapshot.getChildren())
+                                        {
+                                            final String userId = d.getKey();
+                                            ref.child("group-users").child(groupId).child(userId).child("groupStatus").addListenerForSingleValueEvent(new ValueEventListener() {
+                                                @Override
+                                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                    if(dataSnapshot.exists())
+                                                    {
+                                                        String status = dataSnapshot.getValue().toString();
+
+                                                        if(status.equals("member"))
+                                                        {
+                                                            members.add(userId);
+                                                        }
+
+                                                        for(int i=0; i<members.size();i++)
+                                                        {
+                                                            ref.child("group-users").child(groupId).child(members.get(i)).child("keyChange").setValue("unsuccessful");
+
+                                                            try
+                                                            {
+                                                                String encKey = enc.encrypt(newKey,members.get(i));
+                                                                ref.child("group-users").child(groupId).child(members.get(i)).child("encKey").setValue(encKey);
+                                                            }catch (Exception e)
+                                                            {
+
+                                                            }
+                                                        }
+
+                                                    }
+                                                }
+
+                                                @Override
+                                                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                                }
+                                            });
+                                        }
+                                    }
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                }
+                            });
+
+                        }catch (Exception e)
+                        {
+
+                        }
                     }
                 }
             }
@@ -204,18 +415,8 @@ public class GroupsConfig {
 
             }
         });
-    }
 
-    public void deleteGroupMembers(ArrayList<String> deleteMembers, String groupId)
-    {
-        ref = FirebaseDatabase.getInstance().getReference();
 
-        for (int i=0;i<deleteMembers.size();i++)
-        {
-            ref.child("group-users").child(groupId).child(deleteMembers.get(i)).removeValue();
-            ref.child("users").child(deleteMembers.get(i)).child("user-groups").child(groupId).removeValue();
-            ref.child("groups").child(groupId).child("Security").child("GKgeneration").child(deleteMembers.get(i)).removeValue();
-        }
     }
 
     public void leaveGroup(final String groupId, final String currentUserId, final Context context)
@@ -223,7 +424,9 @@ public class GroupsConfig {
         ref = FirebaseDatabase.getInstance().getReference();
         groupUserRef = FirebaseDatabase.getInstance().getReference().child("group-users");
         userRef = FirebaseDatabase.getInstance().getReference().child("users");
-
+        enc = new Security();
+        db = new LocalDatabaseHelper(context);
+        //members = new ArrayList<>();
 
         groupUserRef.child(groupId).child(currentUserId).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
@@ -238,8 +441,84 @@ public class GroupsConfig {
 
                                     if(task.isSuccessful())
                                     {
-                                        ref.child("groups").child(groupId).child("Security").child("GKgeneration").child(currentUserId).removeValue();
-                                        updateGroup(groupId,context);
+                                        ref.child("groups").child(groupId).child("Security").child("key").addListenerForSingleValueEvent(new ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                if(dataSnapshot.exists())
+                                                {
+                                                    String keyVersion = dataSnapshot.getValue().toString();
+
+                                                    String key = "";
+
+                                                    Cursor res = db.getData(groupId,keyVersion);
+                                                    if(res.getCount() != 0)
+                                                    {
+                                                        //StringBuffer buffer = new StringBuffer();
+                                                        while (res.moveToNext()) {
+                                                            //buffer.append("Key Value : " + res.getString(3) + "\n");
+                                                            String grp = res.getString(1);
+                                                            if(grp.equals(groupId))
+                                                            {
+                                                                String ver = res.getString(2);
+                                                                if(ver.equals(keyVersion))
+                                                                {
+                                                                    key = res.getString(3);
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+
+                                                    if(!key.equals(""))
+                                                    {
+                                                        try
+                                                        {
+                                                            final String newKey = generateNewKey(key);
+                                                            updateGroup(groupId,newKey,context);
+
+                                                            ref.child("groups").child(groupId).child("Security").child("distribution").setValue("unicast");
+                                                            ref.child("group-users").child(groupId).addListenerForSingleValueEvent(new ValueEventListener() {
+                                                                @Override
+                                                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                                                                    if(dataSnapshot.exists())
+                                                                    {
+                                                                        for(DataSnapshot d : dataSnapshot.getChildren())
+                                                                        {
+                                                                            final String userId = d.getKey();
+
+                                                                            ref.child("group-users").child(groupId).child(userId).child("keyChange").setValue("unsuccessful");
+
+                                                                            try
+                                                                            {
+                                                                                String encKey = enc.encrypt(newKey,userId);
+                                                                                ref.child("group-users").child(groupId).child(userId).child("encKey").setValue(encKey);
+                                                                            }catch (Exception e)
+                                                                            {
+
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+
+                                                                @Override
+                                                                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                                                }
+                                                            });
+
+                                                        }catch (Exception e)
+                                                        {
+
+                                                        }
+                                                    }
+                                                }
+                                            }
+
+                                            @Override
+                                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                            }
+                                        });
                                     }
                                 }
                             });
@@ -290,10 +569,10 @@ public class GroupsConfig {
         return url[0];
     }
 
-    public void deleteGroup(final String groupId)
+    public void deleteGroup(final String groupId, Context context)
     {
         ref = FirebaseDatabase.getInstance().getReference();
-
+        db = new LocalDatabaseHelper(context);
         /*rootStorage.child("group_profile_images").child(groupId+".jpg").delete();
 
         groupMessagesRef.child(groupId).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -350,6 +629,7 @@ public class GroupsConfig {
                                     if(task.isSuccessful())
                                     {
                                         ref.child("groups").child(groupId).removeValue();
+                                        //db.deleteData(groupId);
 
                                     }
                                 }
@@ -360,19 +640,49 @@ public class GroupsConfig {
 
     }
 
-    public void changeEncryptionKey(String groupId, String algo, String encryptionKey, Context context)
+    public void changeEncryptionKey(final String groupId, final String algo, final String encryptionKey, Context context)
     {
         db = new LocalDatabaseHelper(context);
         ref = FirebaseDatabase.getInstance().getReference();
 
-        ref.child("groups").child(groupId).child("Security").child("Algo").setValue(algo);
+        /*ref.child("groups").child(groupId).child("Security").child("Algo").setValue(algo);
         ref.child("groups").child(groupId).child("Security").child("keyVersions").removeValue();
         ref.child("group-messages").child(groupId).removeValue();
 
         ref.child("groups").child(groupId).child("Security").child("keyVersions").child("v").setValue(encryptionKey);
-        ref.child("groups").child(groupId).child("Security").child("key").setValue("v");
+        ref.child("groups").child(groupId).child("Security").child("key").setValue("v");*/
 
-        db.deleteData(groupId);
-        db.insertData(groupId,"v",encryptionKey);
+        ref.child("groups").child(groupId).child("Security").child("keyVersions").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                if(dataSnapshot.exists())
+                {
+                    int count = (int) dataSnapshot.getChildrenCount();
+                    ref.child("groups").child(groupId).child("Security").child("Algo").setValue(algo);
+                    ref.child("groups").child(groupId).child("Security").child("keyVersions").child("v"+count).setValue(encryptionKey);
+                    ref.child("groups").child(groupId).child("Security").child("key").setValue("v"+count);
+                    db.insertData(groupId,"v"+count,encryptionKey);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+        //db.deleteData(groupId);
+        //db.insertData(groupId,"v",encryptionKey);
+    }
+
+    private String generateNewKey(String groupKey) throws Exception {
+        Random rand = new Random();
+        String randomDigit = String.valueOf(rand.nextLong());
+
+        Security aes = new Security();
+
+        String encryptedVal = aes.encrypt(randomDigit, groupKey);
+        return encryptedVal;
     }
 }

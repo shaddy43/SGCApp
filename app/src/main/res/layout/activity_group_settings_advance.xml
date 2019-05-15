@@ -35,7 +35,7 @@
         android:layout_marginTop="80dp"
         android:layout_marginLeft="60dp"
         android:layout_marginRight="60dp"
-        android:hint="Please write your groupId"
+        android:hint="Please write your group key"
         android:gravity="center"
         android:layout_width="match_parent"
         android:visibility="invisible"
@@ -48,7 +48,7 @@
         android:layout_below="@id/write_encryption_key"
         android:layout_marginRight="60dp"
         android:layout_marginLeft="60dp"
-        android:text="Set groupId"
+        android:text="Set group key"
         android:textColor="@color/light"
         android:background="@color/colorPrimary"
         android:visibility="invisible"
@@ -58,7 +58,7 @@
 
     <TextView
         android:layout_below="@id/set_key_btn"
-        android:layout_marginTop="200dp"
+        android:layout_marginTop="150dp"
         android:layout_marginLeft="30dp"
         android:layout_marginRight="30dp"
         android:textSize="16sp"
@@ -66,7 +66,7 @@
         android:id="@+id/GKView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="group groupId here"
+        android:hint="groupKey here"
         />
 
 

@@ -51,8 +51,8 @@
 
         <ImageView
             android:id="@+id/receiver_messages_image"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="250dp"
+            android:layout_height="250dp"
             android:visibility="gone" />
 
         <Button
@@ -104,8 +104,8 @@
             android:id="@+id/sender_messages_image"
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="250dp"
+            android:layout_height="250dp"
             android:visibility="gone" />
 
         <Button

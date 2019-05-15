@@ -1,6 +1,8 @@
 
 package com.example.shaya.sgcapp.UI;
+import android.app.AlertDialog;
 import android.content.Intent;
+import android.database.Cursor;
 import android.support.annotation.NonNull;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -12,8 +14,10 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SearchView;
+import android.widget.Toast;
 
 import com.example.shaya.sgcapp.DatabaseHelper;
+import com.example.shaya.sgcapp.LocalDatabaseHelper;
 import com.example.shaya.sgcapp.adapters.UserAdapter;
 import com.example.shaya.sgcapp.domain.modelClasses.Users;
 import com.example.shaya.sgcapp.R;
@@ -36,6 +40,7 @@ public class AddContact extends AppCompatActivity {
     private SearchView searchView;
     private SwipeRefreshLayout refreshLayout;
     private DatabaseHelper helper;
+    //private LocalDatabaseHelper db;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,7 +57,6 @@ public class AddContact extends AppCompatActivity {
                 onStart();
             }
         });
-
     }
 
     @Override

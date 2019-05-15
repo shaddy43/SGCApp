@@ -138,8 +138,8 @@ public class DeleteGroupMembers extends AppCompatActivity {
 
                     if (id == R.id.done_selection_for_deletion) {
 
-                        config.deleteGroupMembers(deleteMembers,groupId);
-                        config.updateGroup(groupId,DeleteGroupMembers.this);
+                        config.deleteGroupMembers(deleteMembers,groupId,DeleteGroupMembers.this);
+                        //config.updateGroup(groupId,"");
                         startActivity(new Intent(DeleteGroupMembers.this,Main2Activity.class));
                         Toast.makeText(DeleteGroupMembers.this, "Group Updated Successfully", Toast.LENGTH_SHORT).show();
                         finish();

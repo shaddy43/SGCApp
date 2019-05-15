@@ -75,6 +75,7 @@ public class GroupChat extends AppCompatActivity {
     private Security security;
     private String key;
     private String keyVal;
+    private LocalDatabaseHelper db;
 
     //private ValueEventListener postListener;
     @Override
@@ -130,7 +131,7 @@ public class GroupChat extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        getGroupData();
+        //getGroupData();
         messagesList.clear();
 
     }
@@ -139,11 +140,13 @@ public class GroupChat extends AppCompatActivity {
     protected void onRestart() {
         super.onRestart();
 
-        getGroupData();
+        //getGroupData();
         messagesList.clear();
     }
 
     private void getGroupData() {
+
+        security = new Security();
 
         rootRef.child("groups").child(groupId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -160,6 +163,279 @@ public class GroupChat extends AppCompatActivity {
 
             }
         });
+
+        rootRef.child("groups").child(groupId).child("Security").child("distribution").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                if(dataSnapshot.exists())
+                {
+                    String dist = dataSnapshot.getValue().toString();
+
+                    if(dist.equals("unicast"))
+                    {
+                        rootRef.child("group-users").child(groupId).child(currentUserId).child("keyChange").addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                                if(dataSnapshot.exists())
+                                {
+                                    String keyChangeNotification = dataSnapshot.getValue().toString();
+
+                                    if(keyChangeNotification.equals("unsuccessful"))
+                                    {
+                                        rootRef.child("group-users").child(groupId).child(currentUserId).child("encKey").addListenerForSingleValueEvent(new ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                if(dataSnapshot.exists())
+                                                {
+                                                    String encKey = dataSnapshot.getValue().toString();
+                                                    String decKey = "";
+                                                    try
+                                                    {
+                                                        decKey = security.decrypt(encKey, currentUserId);
+
+                                                    }catch (Exception e)
+                                                    {
+
+                                                    }
+
+
+                                                    final String finalDecKey = decKey;
+                                                    rootRef.child("groups").child(groupId).child("Security").child("key").addListenerForSingleValueEvent(new ValueEventListener() {
+                                                        @Override
+                                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                            if(dataSnapshot.exists())
+                                                            {
+                                                                String version = dataSnapshot.getValue().toString();
+
+                                                                db.insertData(groupId,version, finalDecKey);
+                                                                rootRef.child("group-users").child(groupId).child(currentUserId).child("keyChange").setValue("successful");
+                                                            }
+                                                        }
+
+                                                        @Override
+                                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                                        }
+                                                    });
+                                                }
+                                            }
+
+                                            @Override
+                                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                            }
+                                        });
+                                    }
+                                }
+
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                            }
+                        });
+                    }
+                    else if(dist.equals("broadcast"))
+                    {
+                        rootRef.child("group-users").child(groupId).child(currentUserId).child("keyChange").addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                if(dataSnapshot.exists())
+                                {
+                                    String keyChangeNotification = dataSnapshot.getValue().toString();
+
+                                    if(keyChangeNotification.equals("unsuccessful"))
+                                    {
+                                        rootRef.child("group-users").child(groupId).child(currentUserId).child("memberStatus").addListenerForSingleValueEvent(new ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                if(dataSnapshot.exists())
+                                                {
+                                                    String memberStatusInfo = dataSnapshot.getValue().toString();
+
+                                                    if(memberStatusInfo.equals("old"))
+                                                    {
+                                                        rootRef.child("groups").child(groupId).child("Security").child("encKey").addListenerForSingleValueEvent(new ValueEventListener() {
+                                                            @Override
+                                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                                if(dataSnapshot.exists())
+                                                                {
+                                                                    final String encKey = dataSnapshot.getValue().toString();
+
+                                                                    rootRef.child("groups").child(groupId).child("Security").child("key").addListenerForSingleValueEvent(new ValueEventListener() {
+                                                                        @Override
+                                                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                                            if(dataSnapshot.exists())
+                                                                            {
+                                                                                int version = Integer.parseInt(dataSnapshot.getValue().toString());
+                                                                                version--;
+                                                                                String keyVersion = String.valueOf(version);
+
+                                                                                String key = "";
+                                                                                String decKey = "";
+                                                                                Cursor res = db.getData(groupId,keyVersion);
+                                                                                if(res.getCount() != 0)
+                                                                                {
+                                                                                    //StringBuffer buffer = new StringBuffer();
+                                                                                    while (res.moveToNext()) {
+                                                                                        //buffer.append("Key Value : " + res.getString(3) + "\n");
+                                                                                        String grp = res.getString(1);
+                                                                                        if(grp.equals(groupId))
+                                                                                        {
+                                                                                            String ver = res.getString(2);
+                                                                                            if(ver.equals(keyVersion))
+                                                                                            {
+                                                                                                key = res.getString(3);
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                }
+
+                                                                                if(!key.equals(""))
+                                                                                {
+                                                                                    try
+                                                                                    {
+                                                                                        decKey = security.decrypt(encKey,key);
+
+                                                                                    }catch (Exception e)
+                                                                                    {
+
+                                                                                    }
+
+                                                                                    final String finalDecKey = decKey;
+                                                                                    rootRef.child("groups").child(groupId).child("Security").child("key").addListenerForSingleValueEvent(new ValueEventListener() {
+                                                                                        @Override
+                                                                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                                                            if(dataSnapshot.exists())
+                                                                                            {
+                                                                                                String version = dataSnapshot.getValue().toString();
+
+                                                                                                db.insertData(groupId,version, finalDecKey);
+                                                                                                rootRef.child("group-users").child(groupId).child(currentUserId).child("keyChange").setValue("successful");
+                                                                                            }
+                                                                                        }
+
+                                                                                        @Override
+                                                                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                                                                        }
+                                                                                    });
+
+                                                                                }
+                                                                            }
+                                                                        }
+
+                                                                        @Override
+                                                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                                                        }
+                                                                    });
+                                                                }
+                                                            }
+
+                                                            @Override
+                                                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                                            }
+                                                        });
+                                                    }
+                                                    else if(memberStatusInfo.equals("new"))
+                                                    {
+                                                        rootRef.child("group-users").child(groupId).child(currentUserId).child("encKey").addListenerForSingleValueEvent(new ValueEventListener() {
+                                                            @Override
+                                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                                if(dataSnapshot.exists())
+                                                                {
+                                                                    String encKey = dataSnapshot.getValue().toString();
+                                                                    String decKey = "";
+                                                                    try
+                                                                    {
+                                                                        decKey = security.decrypt(encKey, currentUserId);
+
+                                                                    }catch (Exception e)
+                                                                    {
+
+                                                                    }
+
+
+                                                                    final String finalDecKey = decKey;
+                                                                    rootRef.child("groups").child(groupId).child("Security").child("key").addListenerForSingleValueEvent(new ValueEventListener() {
+                                                                        @Override
+                                                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                                            if(dataSnapshot.exists())
+                                                                            {
+                                                                                String version = dataSnapshot.getValue().toString();
+
+                                                                                db.insertData(groupId,version, finalDecKey);
+                                                                                rootRef.child("group-users").child(groupId).child(currentUserId).child("keyChange").setValue("successful");
+                                                                            }
+                                                                        }
+
+                                                                        @Override
+                                                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                                                        }
+                                                                    });
+                                                                }
+                                                            }
+
+                                                            @Override
+                                                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                                            }
+                                                        });
+                                                    }
+                                                }
+                                            }
+
+                                            @Override
+                                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                            }
+                                        });
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                            }
+                        });
+                    }
+
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+        rootRef.child("group-users").child(groupId).orderByChild("keyChange").equalTo("unsuccessful").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                if(dataSnapshot.exists())
+                {
+
+                }
+                else
+                {
+                    rootRef.child("groups").child(groupId).child("Security").child("distribution").setValue("successful");
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
     }
 
     @Override
@@ -168,27 +444,67 @@ public class GroupChat extends AppCompatActivity {
 
         messagesList.clear();
 
+        /*rootRef.child("groups").child(groupId).child("Security").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                if(dataSnapshot.exists())
+                {
+                    key = dataSnapshot.child("key").getValue().toString();
+
+                    rootRef.child("groups").child(groupId).child("Security").child("keyVersions").child(key).addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                            if(dataSnapshot.exists())
+                            {
+                                keyVal = dataSnapshot.getValue().toString();
+                                //Toast.makeText(GroupChat.this, ""+keyVal, Toast.LENGTH_SHORT).show();
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    });
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });*/
+
         rootRef.child("groups").child(groupId).child("Security").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                key = dataSnapshot.child("key").getValue().toString();
 
-                rootRef.child("groups").child(groupId).child("Security").child("keyVersions").child(key).addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists())
+                {
+                    key = dataSnapshot.child("key").getValue().toString();
+                    keyVal = "";
 
-                        if(dataSnapshot.exists())
-                        {
-                            keyVal = dataSnapshot.getValue().toString();
-                            //Toast.makeText(GroupChat.this, ""+keyVal, Toast.LENGTH_SHORT).show();
+                    Cursor res = db.getData(groupId,key);
+                    if(res.getCount() != 0)
+                    {
+                        //StringBuffer buffer = new StringBuffer();
+                        while (res.moveToNext()) {
+                            //buffer.append("Key Value : " + res.getString(3) + "\n");
+                            String grp = res.getString(1);
+                            if(grp.equals(groupId))
+                            {
+                                String ver = res.getString(2);
+                                if(ver.equals(key))
+                                {
+                                    keyVal = res.getString(3);
+                                }
+                            }
                         }
                     }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                    }
-                });
+                }
             }
 
             @Override
@@ -196,6 +512,7 @@ public class GroupChat extends AppCompatActivity {
 
             }
         });
+
 
         rootRef.child("group-messages").child(groupId).addChildEventListener(new ChildEventListener() {
             @Override
@@ -262,42 +579,15 @@ public class GroupChat extends AppCompatActivity {
 
         messageAdapter = new MessageAdapter(messagesList, groupId, this);
         groupChatMessagesList.setAdapter(messageAdapter);
-
-        rootRef.child("groups").child(groupId).child("Security").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                key = dataSnapshot.child("key").getValue().toString();
-
-                rootRef.child("groups").child(groupId).child("Security").child("keyVersions").child(key).addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                        if(dataSnapshot.exists())
-                        {
-                            keyVal = dataSnapshot.getValue().toString();
-                            //Toast.makeText(GroupChat.this, ""+keyVal, Toast.LENGTH_SHORT).show();
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                    }
-                });
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
+        db = new LocalDatabaseHelper(this);
+        security = new Security();
     }
 
     private void sendGroupMessage() {
 
         String sendingMsg = inputMessage.getText().toString();
         inputMessage.setText("");
-        security = new Security();
+        //security = new Security();
         String encryptedVal = "";
         try
         {

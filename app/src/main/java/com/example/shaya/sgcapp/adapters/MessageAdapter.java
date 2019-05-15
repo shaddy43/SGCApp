@@ -1,6 +1,7 @@
 package com.example.shaya.sgcapp.adapters;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -18,8 +19,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.shaya.sgcapp.LocalDatabaseHelper;
 import com.example.shaya.sgcapp.R;
 import com.example.shaya.sgcapp.Security;
+import com.example.shaya.sgcapp.UI.GroupSettingsAdvance;
 import com.example.shaya.sgcapp.domain.modelClasses.Messages;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -50,6 +53,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     String rootPath;
     String singleMsgKey;
     Context context;
+    LocalDatabaseHelper db;
 
     public MessageAdapter(List<Messages> userMessagesList, String groupId, Context context)
     {
@@ -110,302 +114,27 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         final String fromMessageType;
         final String[] decryptMsg = {""};
         String keyVersion;
+        String singleMsgKey;
 
         messageSenderId = mAuth.getCurrentUser().getUid();
         messages = userMessagesList.get(i);
         fromUserId = messages.getFrom();
         fromMessageType = messages.getType();
         keyVersion = messages.getKeyVersion();
+        db = new LocalDatabaseHelper(context);
+        singleMsgKey = "";
 
         //getKey(keyVersion);
 
         rootRef = FirebaseDatabase.getInstance().getReference();
 
-        rootRef.child("groups").child(groupId).child("Security").child("keyVersions").child(keyVersion).addListenerForSingleValueEvent(new ValueEventListener() {
+        /*rootRef.child("groups").child(groupId).child("Security").child("keyVersions").child(keyVersion).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
                 if(dataSnapshot.exists())
                 {
-                    singleMsgKey = dataSnapshot.getValue().toString();
 
-                    if(fromMessageType.equals("text"))
-                    {
-                        decryptMsg[0] = "";
-                        Security security = new Security();
-                        try {
-                            decryptMsg[0] = security.decrypt(messages.getMessage(), singleMsgKey);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    else if(fromMessageType.equals("image"))
-                    {
-                        decryptMsg[0] = "";
-                        Security security = new Security();
-                        try {
-
-                            rootPath = Environment.getExternalStorageDirectory()
-                                    .getAbsolutePath() + "/apps/sgcapp/temp/";
-                            File root = new File(rootPath);
-
-                            if (!root.exists()) {
-                                root.mkdirs();
-                            }
-
-                            new Downloader().execute(messages.getMessage(), rootPath, messages.getMsgKey());
-
-                            File downloadedFile = new File(rootPath+messages.getMsgKey()+".crypt");
-
-                            if(downloadedFile.exists())
-                            {
-                                decryptMsg[0] = security.decryptFile(new File(rootPath.concat(messages.getMsgKey())), singleMsgKey);
-                            }
-
-                            //File dltFile = new File(rootPath+messages.getMsgKey()+".crypt");
-                            //dltFile.delete();
-
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    else if(fromMessageType.equals("audio"))
-                    {
-                        decryptMsg[0] = "";
-                        Security security = new Security();
-                        try {
-
-                            rootPath = Environment.getExternalStorageDirectory()
-                                    .getAbsolutePath() + "/apps/sgcapp/temp/";
-                            File root = new File(rootPath);
-
-                            if (!root.exists()) {
-                                root.mkdirs();
-                            }
-
-                            new Downloader().execute(messages.getMessage(), rootPath, messages.getMsgKey());
-
-                            File downloadedFile = new File(rootPath+messages.getMsgKey()+".crypt");
-
-                            if(downloadedFile.exists())
-                            {
-                                decryptMsg[0] = security.decryptFile(new File(rootPath.concat(messages.getMsgKey())), singleMsgKey);
-                            }
-
-                            //File dltFile = new File(rootPath+messages.getMsgKey()+".crypt");
-                            //dltFile.delete();
-
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-
-                    userRef = FirebaseDatabase.getInstance().getReference().child("users").child(fromUserId);
-
-                    userRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                            if(dataSnapshot.exists())
-                            {
-                                String image = dataSnapshot.child("Profile_Pic").getValue().toString();
-                                Picasso.get().load(image).into(messageViewHolder.receiverProfileImage);
-
-                                String name = dataSnapshot.child("Name").getValue().toString();
-
-                                if(!fromUserId.equals(messageSenderId))
-                                {
-                                    messageViewHolder.receiverLinearLayout.setVisibility(View.VISIBLE);
-                                    messageViewHolder.receiverName.setVisibility(View.VISIBLE);
-                                    messageViewHolder.receiverName.setText(name);
-                                }
-                                else
-                                {
-                                    messageViewHolder.receiverLinearLayout.setVisibility(View.GONE);
-                                }
-                            }
-
-                        }
-
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                        }
-                    });
-
-                    if(fromMessageType.equals("text"))
-                    {
-                        messageViewHolder.receiverName.setVisibility(View.GONE);
-                        messageViewHolder.senderName.setVisibility(View.GONE);
-                        messageViewHolder.receiverMsgText.setVisibility(View.GONE);
-                        messageViewHolder.receiverProfileImage.setVisibility(View.GONE);
-                        messageViewHolder.senderMsgText.setVisibility(View.GONE);
-                        messageViewHolder.receiverMsgImage.setVisibility(View.GONE);
-                        messageViewHolder.senderMsgImage.setVisibility(View.GONE);
-                        messageViewHolder.senderLinearLayout.setVisibility(View.GONE);
-                        messageViewHolder.receiverLinearLayout.setVisibility(View.GONE);
-                        messageViewHolder.senderMsgAudio.setVisibility(View.GONE);
-                        messageViewHolder.receiverMsgAudio.setVisibility(View.GONE);
-
-                        if(fromUserId.equals(messageSenderId))
-                        {
-                            messageViewHolder.senderLinearLayout.setVisibility(View.VISIBLE);
-                            messageViewHolder.senderMsgText.setVisibility(View.VISIBLE);
-                            messageViewHolder.senderMsgText.setText(decryptMsg[0]);
-                            messageViewHolder.senderMsgText.setTextColor(Color.BLACK);
-                        }
-                        else
-                        {
-                            messageViewHolder.receiverLinearLayout.setVisibility(View.VISIBLE);
-                            messageViewHolder.receiverProfileImage.setVisibility(View.VISIBLE);
-                            messageViewHolder.receiverMsgText.setVisibility(View.VISIBLE);
-                            messageViewHolder.receiverMsgText.setText(decryptMsg[0]);
-                            messageViewHolder.receiverMsgText.setTextColor(Color.BLACK);
-                        }
-                    }
-                    else if(fromMessageType.equals("image")) {
-                        messageViewHolder.receiverName.setVisibility(View.GONE);
-                        messageViewHolder.senderName.setVisibility(View.GONE);
-                        messageViewHolder.senderLinearLayout.setVisibility(View.GONE);
-                        messageViewHolder.receiverLinearLayout.setVisibility(View.GONE);
-                        messageViewHolder.receiverMsgText.setVisibility(View.GONE);
-                        messageViewHolder.receiverProfileImage.setVisibility(View.GONE);
-                        messageViewHolder.senderMsgText.setVisibility(View.GONE);
-                        messageViewHolder.receiverMsgImage.setVisibility(View.GONE);
-                        messageViewHolder.senderMsgImage.setVisibility(View.GONE);
-                        messageViewHolder.senderMsgAudio.setVisibility(View.GONE);
-                        messageViewHolder.receiverMsgAudio.setVisibility(View.GONE);
-
-                        if (fromUserId.equals(messageSenderId)) {
-                            File imgFile = new File(decryptMsg[0]);
-
-                            if (imgFile.exists()) {
-
-                                //Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
-                                //messageViewHolder.senderMsgImage.setImageBitmap(myBitmap);
-
-                                messageViewHolder.senderLinearLayout.setVisibility(View.VISIBLE);
-                                messageViewHolder.senderMsgImage.setVisibility(View.VISIBLE);
-
-                                Picasso.get().load(imgFile).into(messageViewHolder.senderMsgImage);
-                            }
-
-                        } else {
-                            File imgFile = new File(decryptMsg[0]);
-
-                            if (imgFile.exists()) {
-                                messageViewHolder.receiverLinearLayout.setVisibility(View.VISIBLE);
-                                messageViewHolder.receiverProfileImage.setVisibility(View.VISIBLE);
-                                messageViewHolder.receiverMsgImage.setVisibility(View.VISIBLE);
-
-                                //Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
-                                //messageViewHolder.senderMsgImage.setImageBitmap(myBitmap);
-                                Picasso.get().load(imgFile).into(messageViewHolder.receiverMsgImage);
-                            }
-                        }
-
-                    }
-                    else if(fromMessageType.equals("audio"))
-                    {
-                        messageViewHolder.receiverName.setVisibility(View.GONE);
-                        messageViewHolder.senderName.setVisibility(View.GONE);
-                        messageViewHolder.senderLinearLayout.setVisibility(View.GONE);
-                        messageViewHolder.receiverLinearLayout.setVisibility(View.GONE);
-                        messageViewHolder.receiverMsgText.setVisibility(View.GONE);
-                        messageViewHolder.receiverProfileImage.setVisibility(View.GONE);
-                        messageViewHolder.senderMsgText.setVisibility(View.GONE);
-                        messageViewHolder.receiverMsgImage.setVisibility(View.GONE);
-                        messageViewHolder.senderMsgImage.setVisibility(View.GONE);
-                        messageViewHolder.senderMsgAudio.setVisibility(View.GONE);
-                        messageViewHolder.receiverMsgAudio.setVisibility(View.GONE);
-
-                        if (fromUserId.equals(messageSenderId))
-                        {
-                            File audioFile = new File(decryptMsg[0]);
-
-                            if(audioFile.exists())
-                            {
-                                messageViewHolder.senderLinearLayout.setVisibility(View.VISIBLE);
-                                messageViewHolder.senderMsgAudio.setVisibility(View.VISIBLE);
-
-                                messageViewHolder.senderMsgAudio.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-
-                                        final MediaPlayer mediaPlayer = new MediaPlayer();
-                                        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-                                        Uri uri = Uri.parse(decryptMsg[0]);
-
-                                        try
-                                        {
-                                            mediaPlayer.setDataSource(context,uri);
-                                            mediaPlayer.prepare();
-                                            mediaPlayer.start();
-                                            Toast.makeText(context, "Playback started", Toast.LENGTH_LONG).show();
-                                            messageViewHolder.senderMsgAudio.setEnabled(false);
-                                        }catch (Exception e)
-                                        {
-
-                                        }
-
-                                        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                                            @Override
-                                            public void onCompletion(MediaPlayer mp) {
-
-                                                messageViewHolder.senderMsgAudio.setEnabled(true);
-                                                mediaPlayer.release();
-                                                Toast.makeText(context, "Playback finished", Toast.LENGTH_LONG).show();
-                                            }
-                                        });
-
-                                    }
-                                });
-                            }
-                        }
-                        else
-                        {
-                            final File audioFile = new File(decryptMsg[0]);
-
-                            if(audioFile.exists())
-                            {
-                                messageViewHolder.receiverLinearLayout.setVisibility(View.VISIBLE);
-                                messageViewHolder.receiverProfileImage.setVisibility(View.VISIBLE);
-                                messageViewHolder.receiverMsgAudio.setVisibility(View.VISIBLE);
-
-                                messageViewHolder.receiverMsgAudio.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-
-                                        final MediaPlayer mediaPlayer = new MediaPlayer();
-                                        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-                                        Uri uri = Uri.parse(decryptMsg[0]);
-
-                                        try
-                                        {
-                                            mediaPlayer.setDataSource(context,uri);
-                                            mediaPlayer.prepare();
-                                            mediaPlayer.start();
-                                            Toast.makeText(context, "Playback started", Toast.LENGTH_SHORT).show();
-                                            messageViewHolder.receiverMsgAudio.setEnabled(false);
-                                        }catch (Exception e)
-                                        {
-
-                                        }
-
-                                        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                                            @Override
-                                            public void onCompletion(MediaPlayer mp) {
-
-                                                messageViewHolder.receiverMsgAudio.setEnabled(true);
-                                                mediaPlayer.release();
-                                                Toast.makeText(context, "Playback finished", Toast.LENGTH_SHORT).show();
-                                            }
-                                        });
-                                    }
-                                });
-                            }
-                        }
-                    }
 
                 }
 
@@ -415,7 +144,303 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             public void onCancelled(@NonNull DatabaseError databaseError) {
 
             }
+        });*/
+
+        Cursor res = db.getData(groupId,keyVersion);
+        if(res.getCount() != 0)
+        {
+            //StringBuffer buffer = new StringBuffer();
+            while (res.moveToNext()) {
+                //buffer.append("Key Value : " + res.getString(3) + "\n");
+                String grp = res.getString(1);
+                if(grp.equals(groupId))
+                {
+                    String ver = res.getString(2);
+                    if(ver.equals(keyVersion))
+                    {
+                        singleMsgKey = res.getString(3);
+                    }
+                }
+            }
+        }
+
+        if(fromMessageType.equals("text"))
+        {
+            decryptMsg[0] = "";
+            Security security = new Security();
+            try {
+                decryptMsg[0] = security.decrypt(messages.getMessage(), singleMsgKey);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        else if(fromMessageType.equals("image"))
+        {
+            decryptMsg[0] = "";
+            Security security = new Security();
+            try {
+
+                rootPath = Environment.getExternalStorageDirectory()
+                        .getAbsolutePath() + "/apps/sgcapp/temp/";
+                File root = new File(rootPath);
+
+                if (!root.exists()) {
+                    root.mkdirs();
+                }
+
+                new Downloader().execute(messages.getMessage(), rootPath, messages.getMsgKey());
+
+                File downloadedFile = new File(rootPath+messages.getMsgKey()+".crypt");
+
+                if(downloadedFile.exists())
+                {
+                    decryptMsg[0] = security.decryptFile(new File(rootPath.concat(messages.getMsgKey())), singleMsgKey);
+                }
+
+                //File dltFile = new File(rootPath+messages.getMsgKey()+".crypt");
+                //dltFile.delete();
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        else if(fromMessageType.equals("audio"))
+        {
+            decryptMsg[0] = "";
+            Security security = new Security();
+            try {
+
+                rootPath = Environment.getExternalStorageDirectory()
+                        .getAbsolutePath() + "/apps/sgcapp/temp/";
+                File root = new File(rootPath);
+
+                if (!root.exists()) {
+                    root.mkdirs();
+                }
+
+                new Downloader().execute(messages.getMessage(), rootPath, messages.getMsgKey());
+
+                File downloadedFile = new File(rootPath+messages.getMsgKey()+".crypt");
+
+                if(downloadedFile.exists())
+                {
+                    decryptMsg[0] = security.decryptFile(new File(rootPath.concat(messages.getMsgKey())), singleMsgKey);
+                }
+
+                //File dltFile = new File(rootPath+messages.getMsgKey()+".crypt");
+                //dltFile.delete();
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        userRef = FirebaseDatabase.getInstance().getReference().child("users").child(fromUserId);
+
+        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                if(dataSnapshot.exists())
+                {
+                    String image = dataSnapshot.child("Profile_Pic").getValue().toString();
+                    Picasso.get().load(image).into(messageViewHolder.receiverProfileImage);
+
+                    String name = dataSnapshot.child("Name").getValue().toString();
+
+                    if(!fromUserId.equals(messageSenderId))
+                    {
+                        messageViewHolder.receiverLinearLayout.setVisibility(View.VISIBLE);
+                        messageViewHolder.receiverName.setVisibility(View.VISIBLE);
+                        messageViewHolder.receiverName.setText(name);
+                    }
+                    else
+                    {
+                        messageViewHolder.receiverLinearLayout.setVisibility(View.GONE);
+                    }
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
         });
+
+        if(fromMessageType.equals("text"))
+        {
+            messageViewHolder.receiverName.setVisibility(View.GONE);
+            messageViewHolder.senderName.setVisibility(View.GONE);
+            messageViewHolder.receiverMsgText.setVisibility(View.GONE);
+            messageViewHolder.receiverProfileImage.setVisibility(View.GONE);
+            messageViewHolder.senderMsgText.setVisibility(View.GONE);
+            messageViewHolder.receiverMsgImage.setVisibility(View.GONE);
+            messageViewHolder.senderMsgImage.setVisibility(View.GONE);
+            messageViewHolder.senderLinearLayout.setVisibility(View.GONE);
+            messageViewHolder.receiverLinearLayout.setVisibility(View.GONE);
+            messageViewHolder.senderMsgAudio.setVisibility(View.GONE);
+            messageViewHolder.receiverMsgAudio.setVisibility(View.GONE);
+
+            if(fromUserId.equals(messageSenderId))
+            {
+                messageViewHolder.senderLinearLayout.setVisibility(View.VISIBLE);
+                messageViewHolder.senderMsgText.setVisibility(View.VISIBLE);
+                messageViewHolder.senderMsgText.setText(decryptMsg[0]);
+                messageViewHolder.senderMsgText.setTextColor(Color.BLACK);
+            }
+            else
+            {
+                messageViewHolder.receiverLinearLayout.setVisibility(View.VISIBLE);
+                messageViewHolder.receiverProfileImage.setVisibility(View.VISIBLE);
+                messageViewHolder.receiverMsgText.setVisibility(View.VISIBLE);
+                messageViewHolder.receiverMsgText.setText(decryptMsg[0]);
+                messageViewHolder.receiverMsgText.setTextColor(Color.BLACK);
+            }
+        }
+        else if(fromMessageType.equals("image")) {
+            messageViewHolder.receiverName.setVisibility(View.GONE);
+            messageViewHolder.senderName.setVisibility(View.GONE);
+            messageViewHolder.senderLinearLayout.setVisibility(View.GONE);
+            messageViewHolder.receiverLinearLayout.setVisibility(View.GONE);
+            messageViewHolder.receiverMsgText.setVisibility(View.GONE);
+            messageViewHolder.receiverProfileImage.setVisibility(View.GONE);
+            messageViewHolder.senderMsgText.setVisibility(View.GONE);
+            messageViewHolder.receiverMsgImage.setVisibility(View.GONE);
+            messageViewHolder.senderMsgImage.setVisibility(View.GONE);
+            messageViewHolder.senderMsgAudio.setVisibility(View.GONE);
+            messageViewHolder.receiverMsgAudio.setVisibility(View.GONE);
+
+            if (fromUserId.equals(messageSenderId)) {
+                File imgFile = new File(decryptMsg[0]);
+
+                if (imgFile.exists()) {
+
+                    //Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+                    //messageViewHolder.senderMsgImage.setImageBitmap(myBitmap);
+
+                    messageViewHolder.senderLinearLayout.setVisibility(View.VISIBLE);
+                    messageViewHolder.senderMsgImage.setVisibility(View.VISIBLE);
+
+                    Picasso.get().load(imgFile).into(messageViewHolder.senderMsgImage);
+                }
+
+            } else {
+                File imgFile = new File(decryptMsg[0]);
+
+                if (imgFile.exists()) {
+                    messageViewHolder.receiverLinearLayout.setVisibility(View.VISIBLE);
+                    messageViewHolder.receiverProfileImage.setVisibility(View.VISIBLE);
+                    messageViewHolder.receiverMsgImage.setVisibility(View.VISIBLE);
+
+                    //Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+                    //messageViewHolder.senderMsgImage.setImageBitmap(myBitmap);
+                    Picasso.get().load(imgFile).into(messageViewHolder.receiverMsgImage);
+                }
+            }
+
+        }
+        else if(fromMessageType.equals("audio"))
+        {
+            messageViewHolder.receiverName.setVisibility(View.GONE);
+            messageViewHolder.senderName.setVisibility(View.GONE);
+            messageViewHolder.senderLinearLayout.setVisibility(View.GONE);
+            messageViewHolder.receiverLinearLayout.setVisibility(View.GONE);
+            messageViewHolder.receiverMsgText.setVisibility(View.GONE);
+            messageViewHolder.receiverProfileImage.setVisibility(View.GONE);
+            messageViewHolder.senderMsgText.setVisibility(View.GONE);
+            messageViewHolder.receiverMsgImage.setVisibility(View.GONE);
+            messageViewHolder.senderMsgImage.setVisibility(View.GONE);
+            messageViewHolder.senderMsgAudio.setVisibility(View.GONE);
+            messageViewHolder.receiverMsgAudio.setVisibility(View.GONE);
+
+            if (fromUserId.equals(messageSenderId))
+            {
+                File audioFile = new File(decryptMsg[0]);
+
+                if(audioFile.exists())
+                {
+                    messageViewHolder.senderLinearLayout.setVisibility(View.VISIBLE);
+                    messageViewHolder.senderMsgAudio.setVisibility(View.VISIBLE);
+
+                    messageViewHolder.senderMsgAudio.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+
+                            final MediaPlayer mediaPlayer = new MediaPlayer();
+                            mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                            Uri uri = Uri.parse(decryptMsg[0]);
+
+                            try
+                            {
+                                mediaPlayer.setDataSource(context,uri);
+                                mediaPlayer.prepare();
+                                mediaPlayer.start();
+                                Toast.makeText(context, "Playback started", Toast.LENGTH_LONG).show();
+                                messageViewHolder.senderMsgAudio.setEnabled(false);
+                            }catch (Exception e)
+                            {
+
+                            }
+
+                            mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                                @Override
+                                public void onCompletion(MediaPlayer mp) {
+
+                                    messageViewHolder.senderMsgAudio.setEnabled(true);
+                                    mediaPlayer.release();
+                                    Toast.makeText(context, "Playback finished", Toast.LENGTH_LONG).show();
+                                }
+                            });
+
+                        }
+                    });
+                }
+            }
+            else
+            {
+                final File audioFile = new File(decryptMsg[0]);
+
+                if(audioFile.exists())
+                {
+                    messageViewHolder.receiverLinearLayout.setVisibility(View.VISIBLE);
+                    messageViewHolder.receiverProfileImage.setVisibility(View.VISIBLE);
+                    messageViewHolder.receiverMsgAudio.setVisibility(View.VISIBLE);
+
+                    messageViewHolder.receiverMsgAudio.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+
+                            final MediaPlayer mediaPlayer = new MediaPlayer();
+                            mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                            Uri uri = Uri.parse(decryptMsg[0]);
+
+                            try
+                            {
+                                mediaPlayer.setDataSource(context,uri);
+                                mediaPlayer.prepare();
+                                mediaPlayer.start();
+                                Toast.makeText(context, "Playback started", Toast.LENGTH_SHORT).show();
+                                messageViewHolder.receiverMsgAudio.setEnabled(false);
+                            }catch (Exception e)
+                            {
+
+                            }
+
+                            mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                                @Override
+                                public void onCompletion(MediaPlayer mp) {
+
+                                    messageViewHolder.receiverMsgAudio.setEnabled(true);
+                                    mediaPlayer.release();
+                                    Toast.makeText(context, "Playback finished", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
+                    });
+                }
+            }
+        }
 
     }
 

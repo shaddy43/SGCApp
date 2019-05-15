@@ -2,6 +2,7 @@ package com.example.shaya.sgcapp.UI;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -19,6 +20,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.example.shaya.sgcapp.LocalDatabaseHelper;
 import com.example.shaya.sgcapp.domain.modelClasses.Users;
 import com.example.shaya.sgcapp.GroupsConfig;
 import com.example.shaya.sgcapp.GroupChat;
@@ -49,13 +51,15 @@ public class GroupSettings extends AppCompatActivity {
     private ListView groupMembersDisplayList;
     private ArrayList<Users> groupUsers = new ArrayList<>();
     private UserAdapter adapter;
-    private DatabaseReference groupRef, userRef, groupUserRef;
+    private DatabaseReference groupRef, userRef, groupUserRef, rootRef;
     private StorageReference storageRef;
     private FirebaseAuth mAuth;
     private String currentUserId;
     private ProgressDialog loadingBar;
     private Menu group_settings_menu;
     private GroupsConfig config;
+
+    private LocalDatabaseHelper db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +76,7 @@ public class GroupSettings extends AppCompatActivity {
 
         groupMembersDisplayList = findViewById(R.id.group_settings_members_display);
 
+        rootRef = FirebaseDatabase.getInstance().getReference();
         groupRef = FirebaseDatabase.getInstance().getReference().child("groups");
         userRef = FirebaseDatabase.getInstance().getReference().child("users");
         groupUserRef = FirebaseDatabase.getInstance().getReference().child("group-users");
@@ -81,6 +86,8 @@ public class GroupSettings extends AppCompatActivity {
 
         loadingBar = new ProgressDialog(this);
         config = new GroupsConfig();
+
+        db = new LocalDatabaseHelper(this);
     }
 
     @Override
@@ -157,7 +164,7 @@ public class GroupSettings extends AppCompatActivity {
                             loadingBar.setMessage("Please wait while we remove residue components");
                             loadingBar.show();
 
-                            config.deleteGroup(groupId);
+                            config.deleteGroup(groupId,GroupSettings.this);
                             Intent intent = new Intent(GroupSettings.this, Main2Activity.class);
                             startActivity(intent);
                             finish();
@@ -261,6 +268,59 @@ public class GroupSettings extends AppCompatActivity {
                     groupUsers = new ArrayList<>();
                     dataDisplay();
                 }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+        rootRef.child("groups").child(groupId).child("Security").child("key").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                if(dataSnapshot.exists())
+                {
+                    String GK = "";
+                    final String keyVersion = dataSnapshot.getValue().toString();
+
+                    Cursor res = db.getData(groupId,keyVersion);
+                    if(res.getCount() == 0)
+                    {
+                        Toast.makeText(GroupSettings.this, "No Data Found", Toast.LENGTH_SHORT).show();
+                    }
+                    else {
+                        //StringBuffer buffer = new StringBuffer();
+                        while (res.moveToNext()) {
+                            //buffer.append("Key Value : " + res.getString(3) + "\n");
+                            String grp = res.getString(1);
+                            if(grp.equals(groupId))
+                            {
+                                String ver = res.getString(2);
+                                if(ver.equals(keyVersion))
+                                {
+                                    GK = res.getString(3);
+                                }
+                            }
+                        }
+                        Toast.makeText(GroupSettings.this, ""+GK, Toast.LENGTH_LONG).show();
+                    }
+                }
+                /*rootRef.child("groups").child(groupId).child("Security").child("keyVersions").child(keyVersion).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                        GK = dataSnapshot.getValue().toString();
+                        GKview.setText(GK);
+                        //db.insertData(keyVersion,GK);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });*/
             }
 
             @Override

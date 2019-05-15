@@ -183,7 +183,7 @@ public class GroupMemberSelection extends AppCompatActivity {
 
                     ref.child("groups").child(groupKey).child("Total_Members").setValue(members.size()+1);*/
 
-                    config.addGroupMembers(members,groupKey);
+                    config.addGroupMembers(members,groupKey,"new",GroupMemberSelection.this);
 
                     AlertDialog.Builder builder = new AlertDialog.Builder(GroupMemberSelection.this, R.style.AlertDialog);
                     builder.setTitle("Enter Group Key");
@@ -207,7 +207,11 @@ public class GroupMemberSelection extends AppCompatActivity {
                             //ref.child("groups").child(groupKey).child("Security").child("keyVersions").child("v").setValue(gK);
                             //ref.child("groups").child(groupKey).child("Security").child("key").setValue("v");
 
-                            config.setKey(gK,groupKey,GroupMemberSelection.this);
+                            try {
+                                config.setKey(gK,groupKey,GroupMemberSelection.this,members);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
 
                             startActivity(new Intent(GroupMemberSelection.this,Main2Activity.class));
                             finish();

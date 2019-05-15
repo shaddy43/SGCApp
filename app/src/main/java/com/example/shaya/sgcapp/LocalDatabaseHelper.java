@@ -9,7 +9,7 @@ import android.support.annotation.Nullable;
 
 public class LocalDatabaseHelper extends SQLiteOpenHelper {
 
-    public static final String databaseName = "new.db";
+    public static final String databaseName = "sgcAppV1.db";
     public static final String tableName = "keys";
 
     public static final String id = "ID";
@@ -20,15 +20,14 @@ public class LocalDatabaseHelper extends SQLiteOpenHelper {
     public LocalDatabaseHelper(@Nullable Context context) {
         super(context, databaseName, null, 1);
 
-        SQLiteDatabase db = this.getWritableDatabase();
+        //SQLiteDatabase db = this.getWritableDatabase();
         //db.execSQL("create table keys(id INTEGER PRIMARY KEY AUTOINCREMENT, GroupId TEXT, KeyVersion Text, KeyValue Text)");
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
 
-        //db.execSQL("create table "+tableName+"("+id+" INTEGER PRIMARY KEY AUTOINCREMENT, "+groupId+" TEXT, "+keyVersion+" TEXT, "+keyValue+" TEXT)");
-        db.execSQL("create table keys(id INTEGER PRIMARY KEY AUTOINCREMENT, GroupId TEXT, KeyVersion Text, KeyValue Text)");
+        db.execSQL("create table "+tableName+"("+id+" INTEGER PRIMARY KEY AUTOINCREMENT, "+groupId+" TEXT, "+keyVersion+" Text, "+keyValue+" Text)");
     }
 
     @Override
@@ -58,7 +57,8 @@ public class LocalDatabaseHelper extends SQLiteOpenHelper {
     public Cursor getData(String group_Id, String keyVer)
     {
         SQLiteDatabase db = this.getWritableDatabase();
-        Cursor result = db.rawQuery("select * from keys where groupId = "+group_Id+" AND KeyVersion = "+keyVer+"", null);
+        //Cursor result = db.rawQuery("select KeyValue from keys where GroupId like "+group_Id+" AND KeyVersion like "+keyVer+")", null);
+        Cursor result = db.rawQuery("select * from "+tableName+"",null);
         return  result;
     }
 

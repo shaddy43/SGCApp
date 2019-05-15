@@ -56,6 +56,39 @@ public class AddGroupMembers extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         currentUserId = mAuth.getCurrentUser().getUid();
         config = new GroupsConfig();
+
+        /*rootRef.child("groups").child(groupId).child("Security").child("key").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                if(dataSnapshot.exists())
+                {
+                    String version = dataSnapshot.getValue().toString();
+
+                    rootRef.child("groups").child(groupId).child("Security").child("keyVersions").child(version).addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                            if(dataSnapshot.exists())
+                            {
+                                GK = dataSnapshot.getValue().toString();
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    });
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });*/
     }
 
     @Override
@@ -164,8 +197,8 @@ public class AddGroupMembers extends AppCompatActivity {
                         rootRef.child("groups").child(groupId).child("Security").child("GKgeneration").child(selectedMembers.get(i)).setValue(hashValue);
                     }*/
 
-                    config.addGroupMembers(selectedMembers,groupId);
-                    config.updateGroup(groupId,AddGroupMembers.this);
+                    config.addGroupMembers(selectedMembers,groupId,"", AddGroupMembers.this);
+                    //config.updateGroup(groupId,GK);
 
                     startActivity(new Intent(AddGroupMembers.this,Main2Activity.class));
                     Toast.makeText(AddGroupMembers.this, "Group Updated Successfully", Toast.LENGTH_SHORT).show();
